@@ -15,6 +15,7 @@ class SubWindow(
     init {
         this.title = title
         scene = Scene(root)
+        scene.stylesheets.addAll(globalStylesheets)
         initWindowType()
         registerShortcuts()
         initOwner(owner)
@@ -74,5 +75,9 @@ class SubWindow(
 
     enum class Type {
         Popup, Undecorated, ToolWindow, Prompt;
+    }
+
+    companion object {
+        val globalStylesheets = mutableListOf<String>()
     }
 }
