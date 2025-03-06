@@ -1,0 +1,44 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.25'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'maven-publish'
+}
+
+group = 'de.schleifenkauz'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact kotlinSourcesJar
+        }
+    }
+}
+
+javafx {
+    version = '17.0.6'
+    modules = ['javafx.controls']
+    configuration = 'compileOnly'
+}
+
+dependencies {
+    api "org.controlsfx:controlsfx:11.1.2"
+    api 'org.kordamp.ikonli:ikonli-javafx:12.3.1'
+    api 'org.kordamp.ikonli:ikonli-material2-pack:12.3.1'
+    compileOnly 'de.schleifenkauz:reaktive:1.0-SNAPSHOT'
+
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+kotlin {
+    jvmToolchain(19)
+}
