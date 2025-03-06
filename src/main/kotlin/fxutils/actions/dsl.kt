@@ -56,7 +56,7 @@ fun ContextualizedAction.makeButton(vararg style: String): Button {
     val button = Button()
     val iconObserver = this.icon.forEach { icon ->
         Platform.runLater {
-            button.graphic = FontIcon(icon)
+            button.graphic = icon?.let(::FontIcon)
         }
     }
     val toggleState = this.toggleState
@@ -66,7 +66,7 @@ fun ContextualizedAction.makeButton(vararg style: String): Button {
         }
         iconObserver and toggleStateObserver
     } else iconObserver
-    val iconAvailable = this.icon.notEqualTo(Action.NO_ICON)
+    val iconAvailable = this.icon.notEqualTo(null)
     val applicable = this.isApplicable
     if (this.wrapped.ifNotApplicable == Action.IfNotApplicable.Disable) {
         button.visibleProperty().bind(iconAvailable.asObservableValue())
@@ -100,7 +100,6 @@ private fun ButtonBase.makeIconButton(ikon: Ikon, description: String) {
     neverHGrow()
 }
 
-@Deprecated(message = "User action system instead")
 fun Ikon.button(action: String, execute: () -> Unit = {}): Button {
     val button = Button()
     button.makeIconButton(this, action)

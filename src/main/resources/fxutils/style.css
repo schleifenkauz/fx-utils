@@ -39,3 +39,46 @@ Button.sleek-button:focused {
     -fx-background-color: #2a2a32;
     -fx-spacing: 3px;
 }
+
+FontIcon {
+    -fx-icon-color: -fx-accent;
+}
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-focus-traversable: false;
+    -fx-border-color: transparent;
+    -fx-border-width: 2px;
+    -fx-padding: 0px !important;
+}
+
+.icon-button:selected {
+    -fx-border-color: black;
+    -fx-background-color: #351919 !important;
+}
+
+.large-icon-button FontIcon {
+    -fx-icon-size: 26px;
+}
+
+.large-icon-button {
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+
+.large-icon-button:hover {
+    -fx-background-color: #351919;
+}
+
+.medium-icon-button FontIcon {
+    -fx-icon-size: 18px;
+}
+
+.medium-icon-button {
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+}
+
+.medium-icon-button:hover {
+    -fx-background-color: #351919;
+}

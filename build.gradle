@@ -30,7 +30,10 @@ javafx {
 dependencies {
     api "org.controlsfx:controlsfx:11.1.2"
     api 'org.kordamp.ikonli:ikonli-javafx:12.3.1'
-    api 'org.kordamp.ikonli:ikonli-material2-pack:12.3.1'
+    implementation 'org.kordamp.ikonli:ikonli-materialdesign2-pack:12.3.1'
+    implementation 'org.kordamp.ikonli:ikonli-codicons-pack:12.3.1'
+    implementation 'org.kordamp.ikonli:ikonli-evaicons-pack:12.3.1'
+    implementation 'org.kordamp.ikonli:ikonli-material2-pack:12.3.1'
     compileOnly 'de.schleifenkauz:reaktive:1.0-SNAPSHOT'
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
