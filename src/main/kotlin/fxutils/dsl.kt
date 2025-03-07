@@ -10,7 +10,8 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
-
+import reaktive.value.ReactiveValue
+import reaktive.value.fx.asObservableValue
 
 /**
  * Return a [MenuBar] configured with the given [builder].
@@ -20,7 +21,7 @@ inline fun menuBar(builder: MenuBarBuilder.() -> Unit) = MenuBarBuilder().apply(
 /**
  * Builder class for [MenuBar]s
  */
-class MenuBarBuilder constructor() {
+class MenuBarBuilder {
     private val menus = mutableListOf<Menu>()
 
     /**
@@ -43,7 +44,7 @@ class MenuBarBuilder constructor() {
 /**
  * Builder class for [Menu]s
  */
-class MenuBuilder constructor(private val name: String) {
+class MenuBuilder(private val name: String) {
     private var items = mutableListOf<MenuItem>()
 
     /**
@@ -77,6 +78,12 @@ inline fun button(text: String = "", graphic: Node, block: Button.() -> Unit = {
  */
 inline fun label(text: String = "", graphic: Node? = null, block: Label.() -> Unit = {}): Label =
     Label(text, graphic).apply(block)
+
+fun label(text: ReactiveValue<String>): Label {
+    val label = Label()
+    label.textProperty().bind(text.asObservableValue())
+    return label
+}
 
 /**
  * Create a [TextField] with the given [text] and apply the given [block] to it.

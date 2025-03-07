@@ -82,3 +82,11 @@ FontIcon {
 .medium-icon-button:hover {
     -fx-background-color: #351919;
 }
+
+/*
+* Slider Bar
+*/
+
+.slider-bar > ProgressBar > .bar {
+    -fx-background-insets: 0;
+}

@@ -25,6 +25,7 @@ import javafx.stage.PopupWindow
 import javafx.stage.Window
 import org.controlsfx.glyphfont.FontAwesome
 import org.controlsfx.glyphfont.Glyph
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -174,10 +175,10 @@ fun <N : Node> N.styleClass(vararg classes: String) = also { it.styleClass.addAl
 infix fun <N : Node> N.styleClass(name: String) = also { it.styleClass.add(name) }
 
 fun button(text: String = "", onAction: (ev: ActionEvent) -> Unit = {}) =
-    Button(text).styleClass("sleek-button").also { btn -> btn.setOnAction(onAction) }
+    Button(text).styleClass("sleek-button").also { btn -> btn.onAction = onAction }
 
 fun button(glyph: FontAwesome.Glyph, onAction: (ev: ActionEvent) -> Unit) =
-    Button(null, Glyph("FontAwesome", glyph)).also { btn -> btn.setOnAction(onAction) }
+    Button(null, Glyph("FontAwesome", glyph)).also { btn -> btn.onAction = onAction }
 
 fun showPopup(owner: Node, node: Node) = popup(node).show(owner)
 
@@ -303,3 +304,10 @@ private val robot by lazy { Robot() }
 val Node.mousePosition: Point2D get() = screenToLocal(robot.mousePosition)
 val Node.mouseX get() = mousePosition.x
 val Node.mouseY get() = mousePosition.y
+
+fun String.canonicalizeDecimal(): String {
+    if ('.' !in this) return this
+    return dropLastWhile { c -> c == '0' }.removeSuffix(".")
+}
+
+fun Double.format(accuracy: Int) = String.format(Locale.US, "%.${accuracy}f", this).canonicalizeDecimal()
