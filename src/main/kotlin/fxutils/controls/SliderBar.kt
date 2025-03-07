@@ -19,6 +19,7 @@ class SliderBar<T>(
     val value: ReactiveVariable<T>,
     name: ReactiveString,
     private val converter: Converter<T>,
+    private val style: Style = Style.Regular
 ) : StackPane() {
     private val bar = ProgressBar()
     private val nameLabel = label(name)
@@ -28,7 +29,9 @@ class SliderBar<T>(
 
     init {
         styleClass.add("slider-bar")
-        children.addAll(bar, nameLabel)
+        children.add(bar)
+        if (style == Style.AlwaysValue) children.add(valueLabel)
+        else children.add(nameLabel)
         addEventHandlers()
         setupTextFieldInput()
         valueObserver = value.forEach(::valueChanged)
@@ -36,16 +39,16 @@ class SliderBar<T>(
 
     private fun setupTextFieldInput() {
         valueInput.focusedProperty().addListener { _, _, focused ->
-            if (!focused) setActiveControl(nameLabel)
+            if (!focused) showName()
         }
         valueInput.registerShortcuts {
             on("ESC") {
-                setActiveControl(nameLabel)
+                showName()
             }
             on("ENTER") {
                 val v = converter.fromLiteral(valueInput.text) ?: return@on
                 value.now = v
-                setActiveControl(nameLabel)
+                showName()
             }
         }
     }
@@ -62,21 +65,29 @@ class SliderBar<T>(
     private fun addEventHandlers() {
         addEventHandler(MouseEvent.ANY) { ev ->
             when (ev.eventType) {
-                MouseEvent.MOUSE_ENTERED -> setActiveControl(valueLabel)
+                MouseEvent.MOUSE_ENTERED -> showValue()
                 MouseEvent.MOUSE_PRESSED -> setValueFromXCoordinate(ev.x)
                 MouseEvent.MOUSE_DRAGGED -> setValueFromXCoordinate(ev.x)
                 MouseEvent.MOUSE_RELEASED -> value.now = converter.fromDouble(bar.progress)
-                MouseEvent.MOUSE_EXITED -> setActiveControl(nameLabel)
+                MouseEvent.MOUSE_EXITED -> showName()
                 MouseEvent.MOUSE_CLICKED -> {
                     if (ev.clickCount == 2) {
                         valueInput.text = converter.toString(value.now)
                         setActiveControl(valueInput)
                     } else {
-                        setActiveControl(valueLabel)
+                        showValue()
                     }
                 }
             }
         }
+    }
+
+    private fun showValue() {
+        setActiveControl(if (style == Style.AlwaysName) nameLabel else valueLabel)
+    }
+
+    private fun showName() {
+        setActiveControl(if (style == Style.AlwaysValue) valueLabel else nameLabel)
     }
 
     private fun setValueFromXCoordinate(x: Double) {
@@ -94,5 +105,9 @@ class SliderBar<T>(
         fun fromDouble(value: Double): T
 
         fun toDouble(value: T): Double
+    }
+
+    enum class Style {
+        Regular, AlwaysValue, AlwaysName;
     }
 }

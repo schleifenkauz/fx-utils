@@ -2,6 +2,8 @@
  * @author Nikolaus Knop
  */
 
+@file:Suppress("UsePropertyAccessSyntax")
+
 package fxutils
 
 import javafx.application.Platform
@@ -175,10 +177,10 @@ fun <N : Node> N.styleClass(vararg classes: String) = also { it.styleClass.addAl
 infix fun <N : Node> N.styleClass(name: String) = also { it.styleClass.add(name) }
 
 fun button(text: String = "", onAction: (ev: ActionEvent) -> Unit = {}) =
-    Button(text).styleClass("sleek-button").also { btn -> btn.onAction = onAction }
+    Button(text).styleClass("sleek-button").also { btn -> btn.setOnAction(onAction) }
 
 fun button(glyph: FontAwesome.Glyph, onAction: (ev: ActionEvent) -> Unit) =
-    Button(null, Glyph("FontAwesome", glyph)).also { btn -> btn.onAction = onAction }
+    Button(null, Glyph("FontAwesome", glyph)).also { btn -> btn.setOnAction(onAction) }
 
 fun showPopup(owner: Node, node: Node) = popup(node).show(owner)
 
