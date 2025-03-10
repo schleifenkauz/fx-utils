@@ -3,7 +3,6 @@ package fxutils.prompt
 import fxutils.*
 import fxutils.PseudoClasses.SELECTED
 import javafx.geometry.Point2D
-import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
@@ -23,7 +22,7 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
     private val searchText = CustomTextField().styleClass("sleek-text-field", "search-field")
     private val optionsBox = VBox().styleClass("options-box")
 
-    private val optionBoxes = mutableMapOf<E, Node>()
+    private val optionBoxes = mutableMapOf<E, Region>()
     private var filteredOptions: List<E> = emptyList()
     var selectedOption: E? = null
         private set
@@ -58,7 +57,7 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
 
     protected open fun makeOption(text: String): E? = null
 
-    protected abstract fun createCell(option: E): Node
+    protected abstract fun createCell(option: E): Region
 
     protected abstract fun extractText(option: E): String
 

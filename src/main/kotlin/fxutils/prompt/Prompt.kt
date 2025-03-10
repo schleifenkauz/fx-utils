@@ -2,6 +2,9 @@ package fxutils.prompt
 
 import fxutils.SubWindow
 import fxutils.styleClass
+import javafx.geometry.HPos
+import javafx.geometry.HPos.*
+import javafx.geometry.Point2D
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Label
@@ -35,23 +38,34 @@ abstract class Prompt<R, N : Node> {
         content
     ) styleClass "dialog-box"
 
-    fun showDialog(
-        anchorNode: Node? = null,
-        owner: Window? = null
-    ): R {
-        commited = false
+    fun showDialog(owner: Window, coords: Point2D? = null): R {
         val layout = createLayout()
+        return showDialog(layout, owner, coords)
+    }
+
+    private fun showDialog(layout: Parent, owner: Window, coords: Point2D?): R {
+        commited = false
         window = SubWindow(layout, title, SubWindow.Type.Prompt)
-        window.initOwner(owner ?: anchorNode?.scene?.window)
+        window.initOwner(owner)
         window.setOnShown { onReceiveFocus() }
         window.sizeToScene()
-        window.showAndWait()
-        if (anchorNode != null) {
-            val coords = anchorNode.localToScreen(0.0, 0.0)
+        if (coords != null) {
             window.x = coords.x
-            window.y = coords.y + ((anchorNode as? Region)?.height ?: 10.0) + 5.0
+            window.y = coords.y
         }
+        window.showAndWait()
         @Suppress("UNCHECKED_CAST")
         return if (commited) result as R else getDefault()
+    }
+
+    fun showDialog(anchorNode: Region, alignment: HPos = CENTER): R {
+        val layout = createLayout()
+        val relativeX = when (alignment) {
+            LEFT -> 0.0
+            CENTER -> anchorNode.width / 2 //TODO how to determine the width of the dialog?
+            RIGHT -> anchorNode.width
+        }
+        val coords = anchorNode.localToScreen(relativeX, anchorNode.height + 5.0)
+        return showDialog(layout, anchorNode.scene.window, coords)
     }
 }

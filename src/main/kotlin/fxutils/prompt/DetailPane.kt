@@ -1,11 +1,11 @@
 package fxutils.prompt
 
+import fxutils.styleClass
 import javafx.scene.Node
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
-import fxutils.styleClass
 
 open class DetailPane : VBox() {
     init {
@@ -31,6 +31,6 @@ open class DetailPane : VBox() {
     }
 
     companion object {
-        const val LABEL_WIDTH = 130.0
+        const val LABEL_WIDTH = 80.0
     }
 }
