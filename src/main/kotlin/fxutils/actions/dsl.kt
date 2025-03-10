@@ -100,9 +100,9 @@ private fun ButtonBase.makeIconButton(ikon: Ikon, description: String) {
     neverHGrow()
 }
 
-fun Ikon.button(action: String, execute: () -> Unit = {}): Button {
+fun Ikon.button(action: String, execute: (MouseEvent) -> Unit = {}): Button {
     val button = Button()
     button.makeIconButton(this, action)
-    button.setOnMouseClicked { execute() }
+    button.onMouseClicked = execute
     return button
 }

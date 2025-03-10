@@ -2,11 +2,13 @@ package fxutils.prompt
 
 import fxutils.SubWindow
 import fxutils.styleClass
+import javafx.event.Event
 import javafx.geometry.HPos
 import javafx.geometry.HPos.*
 import javafx.geometry.Point2D
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.Scene
 import javafx.scene.control.Label
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
@@ -38,15 +40,15 @@ abstract class Prompt<R, N : Node> {
         content
     ) styleClass "dialog-box"
 
-    fun showDialog(owner: Window, coords: Point2D? = null): R {
+    fun showDialog(owner: Window? = null, coords: Point2D? = null): R {
         val layout = createLayout()
         return showDialog(layout, owner, coords)
     }
 
-    private fun showDialog(layout: Parent, owner: Window, coords: Point2D?): R {
+    private fun showDialog(layout: Parent, owner: Window?, coords: Point2D?): R {
         commited = false
         window = SubWindow(layout, title, SubWindow.Type.Prompt)
-        window.initOwner(owner)
+        if (owner != null) window.initOwner(owner)
         window.setOnShown { onReceiveFocus() }
         window.sizeToScene()
         if (coords != null) {
@@ -58,7 +60,7 @@ abstract class Prompt<R, N : Node> {
         return if (commited) result as R else getDefault()
     }
 
-    fun showDialog(anchorNode: Region, alignment: HPos = CENTER): R {
+    fun showDialog(anchorNode: Region, alignment: HPos = LEFT): R {
         val layout = createLayout()
         val relativeX = when (alignment) {
             LEFT -> 0.0
@@ -67,5 +69,17 @@ abstract class Prompt<R, N : Node> {
         }
         val coords = anchorNode.localToScreen(relativeX, anchorNode.height + 5.0)
         return showDialog(layout, anchorNode.scene.window, coords)
+    }
+
+    fun showDialog(ev: Event?): R {
+        if (ev == null) return showDialog()
+        val anchorNode = ev.source as? Region
+        return if (anchorNode != null) showDialog(anchorNode)
+        else when (val target = ev.target) {
+            is Scene -> showDialog(target.window)
+            is Region -> showDialog(target)
+            is Window -> showDialog(target)
+            else -> showDialog()
+        }
     }
 }
