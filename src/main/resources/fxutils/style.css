@@ -83,6 +83,10 @@ FontIcon {
     -fx-background-color: #351919;
 }
 
+.action-bar {
+    -fx-alignment: center-left;
+}
+
 /*
 * Slider Bar
 */

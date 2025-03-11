@@ -1,6 +1,7 @@
 package fxutils.actions
 
 import fxutils.neverHGrow
+import fxutils.styleClass
 import javafx.beans.binding.Bindings
 import javafx.scene.control.Button
 import javafx.scene.layout.HBox
@@ -17,6 +18,7 @@ open class ActionBar(vararg buttonStyle: String) : HBox() {
     }
 
     init {
+        styleClass("action-bar")
         visibleProperty().bind(Bindings.isEmpty(children).not())
         neverHGrow()
     }

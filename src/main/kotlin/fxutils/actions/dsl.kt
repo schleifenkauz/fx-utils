@@ -103,6 +103,6 @@ private fun ButtonBase.makeIconButton(ikon: Ikon, description: String) {
 fun Ikon.button(action: String, execute: (MouseEvent) -> Unit = {}): Button {
     val button = Button()
     button.makeIconButton(this, action)
-    button.onMouseClicked = execute
+    button.setOnMouseClicked { ev -> execute(ev) }
     return button
 }

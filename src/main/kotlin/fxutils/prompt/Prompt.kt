@@ -3,8 +3,6 @@ package fxutils.prompt
 import fxutils.SubWindow
 import fxutils.styleClass
 import javafx.event.Event
-import javafx.geometry.HPos
-import javafx.geometry.HPos.*
 import javafx.geometry.Point2D
 import javafx.scene.Node
 import javafx.scene.Parent
@@ -51,33 +49,28 @@ abstract class Prompt<R, N : Node> {
         if (owner != null) window.initOwner(owner)
         window.setOnShown { onReceiveFocus() }
         window.sizeToScene()
+        window.showAndWait()
         if (coords != null) {
             window.x = coords.x
             window.y = coords.y
-        }
-        window.showAndWait()
+        } else window.centerOnScreen()
         @Suppress("UNCHECKED_CAST")
         return if (commited) result as R else getDefault()
     }
 
-    fun showDialog(anchorNode: Region, alignment: HPos = LEFT): R {
+    fun showDialog(anchorNode: Region, offset: Point2D = Point2D(0.0, anchorNode.height + 5.0)): R {
         val layout = createLayout()
-        val relativeX = when (alignment) {
-            LEFT -> 0.0
-            CENTER -> anchorNode.width / 2 //TODO how to determine the width of the dialog?
-            RIGHT -> anchorNode.width
-        }
-        val coords = anchorNode.localToScreen(relativeX, anchorNode.height + 5.0)
+        val coords = anchorNode.localToScreen(offset)
         return showDialog(layout, anchorNode.scene.window, coords)
     }
 
-    fun showDialog(ev: Event?): R {
+    fun showDialog(ev: Event?, offset: Point2D? = null): R {
         if (ev == null) return showDialog()
         val anchorNode = ev.source as? Region
-        return if (anchorNode != null) showDialog(anchorNode)
+        return if (anchorNode != null) showDialog(anchorNode, offset ?: Point2D(0.0, anchorNode.height + 5.0))
         else when (val target = ev.target) {
             is Scene -> showDialog(target.window)
-            is Region -> showDialog(target)
+            is Region -> showDialog(target, offset ?: Point2D(0.0, target.height + 5.0))
             is Window -> showDialog(target)
             else -> showDialog()
         }
