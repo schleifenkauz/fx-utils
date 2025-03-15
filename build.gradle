@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.9.25'
+    id 'org.jetbrains.kotlin.jvm' version '2.1.10'
     id 'org.openjfx.javafxplugin' version '0.1.0'
     id 'maven-publish'
 }
@@ -22,7 +22,7 @@ publishing {
 }
 
 javafx {
-    version = '17.0.6'
+    version = '19.0.2.1'
     modules = ['javafx.controls']
     configuration = 'compileOnly'
 }

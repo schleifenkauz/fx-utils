@@ -20,7 +20,7 @@ import kotlin.reflect.KMutableProperty0
 
 abstract class SearchableListView<E>(private val title: String) : VBox() {
     private val searchText = CustomTextField().styleClass("sleek-text-field", "search-field")
-    private val optionsBox = VBox().styleClass("options-box")
+    private val layout = VBox().styleClass("options-box")
 
     private val optionBoxes = mutableMapOf<E, Region>()
     private var filteredOptions: List<E> = emptyList()
@@ -31,29 +31,41 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
 
     val confirmedOption get() = confirmOption.stream
 
-    val removedOptions = mutableSetOf<E>()
-
-    private var window: SubWindow? = null
+    private var filter: (E) -> Boolean = { true }
 
     protected abstract fun options(): List<E>
 
     init {
         styleClass("searchable-list")
-        stylesheets.add("/fxutils/style.css")
+        setupSearchField()
+        prepareOptionBoxes()
+        layout.setMaxSize(300.0, 500.0)
+        children.addAll(searchText, layout)
+        registerShortcuts()
+    }
+
+    private fun setupSearchField() {
         searchText.promptText = "$title..."
         searchText.left = FontIcon(Material2MZ.SEARCH)
-        optionsBox.setMaxSize(300.0, 500.0)
-        children.addAll(searchText, optionsBox)
-        registerShortcuts()
-        searchText.textProperty().addListener { _, _, txt -> updatedText(txt) }
+        searchText.textProperty().addListener { _ ->
+            refilterOptions()
+        }
+    }
+
+    fun setFilter(predicate: (E) -> Boolean) {
+        filter = predicate
+    }
+
+    fun addFilter(predicate: (E) -> Boolean) {
+        val oldFilter = filter
+        filter = { e -> oldFilter(e) && predicate(e) }
+    }
+
+    fun removeOptions(options: List<E>) {
+        addFilter { option -> option !in options }
     }
 
     protected fun getBox(option: E) = optionBoxes[option]
-
-    private fun initializeOptions() {
-        prepareOptionBoxes()
-        updatedText(searchText.text)
-    }
 
     protected open fun makeOption(text: String): E? = null
 
@@ -68,13 +80,6 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
         searchText.selectAll()
     }
 
-    private fun updatedText(txt: String) {
-        filteredOptions = options().filter { option -> extractText(option).contains(txt, ignoreCase = true) }
-        select(filteredOptions.firstOrNull { option -> option !in removedOptions })
-        layoutOptionBoxes()
-        if (scene != null) scene.window.sizeToScene()
-    }
-
     private fun prepareOptionBoxes() {
         optionBoxes.clear()
         for (option in options()) {
@@ -86,13 +91,17 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
         }
     }
 
-    private fun layoutOptionBoxes() {
-        optionsBox.children.clear()
-        for (option in filteredOptions) {
-            if (option in removedOptions) continue
-            val box = optionBoxes.getValue(option)
-            optionsBox.children.add(box)
+    private fun refilterOptions() {
+        layout.children.clear()
+        filteredOptions = options().filter { option ->
+            extractText(option).contains(searchText.text, ignoreCase = true) && filter(option)
         }
+        select(filteredOptions.firstOrNull())
+        for (option in filteredOptions) {
+            val box = optionBoxes.getValue(option)
+            layout.children.add(box)
+        }
+        if (scene != null) scene.window.sizeToScene()
     }
 
     private fun registerShortcuts() {
@@ -147,14 +156,13 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
         anchor: Point2D? = null, owner: Window? = null,
         initialOption: E? = null, onConfirm: (E) -> Unit
     ) {
-        initializeOptions()
+        refilterOptions()
         if (initialOption in filteredOptions) select(initialOption)
-        if (window == null) window = SubWindow(this, title, type = SubWindow.Type.Popup)
-        val w = window!!
+        val w = SubWindow(this, title, type = SubWindow.Type.Popup)
         if (anchor != null) {
             w.x = anchor.x
             w.y = anchor.y
-        } else window!!.centerOnScreen()
+        } else w.centerOnScreen()
         userData = confirmedOption.observe { _, option -> onConfirm(option) }
         if (owner != null && w.owner == null) w.initOwner(owner)
         w.showAndWait()
