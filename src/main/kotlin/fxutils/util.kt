@@ -27,6 +27,8 @@ import javafx.stage.PopupWindow
 import javafx.stage.Window
 import org.controlsfx.glyphfont.FontAwesome
 import org.controlsfx.glyphfont.Glyph
+import reaktive.value.ReactiveBoolean
+import reaktive.value.fx.asObservableValue
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
@@ -313,3 +315,8 @@ fun String.canonicalizeDecimal(): String {
 }
 
 fun Double.format(accuracy: Int) = String.format(Locale.US, "%.${accuracy}f", this).canonicalizeDecimal()
+
+fun Button.disableIf(condition: ReactiveBoolean): Button {
+    disableProperty().bind(condition.asObservableValue())
+    return this
+}
