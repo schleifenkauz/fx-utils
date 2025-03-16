@@ -68,6 +68,16 @@ class Action<in C> private constructor(
             execute = { ctx, _ -> body(ctx) }
         }
 
+        inline fun <reified T : C> executesOn(crossinline action: (obj: T, ev: Event?) -> Unit) {
+            applicableIf { obj -> reactiveValue(obj is T) }
+            executes { obj, ev -> action(obj as T, ev) }
+        }
+
+        inline fun <reified T : C> executesOn(crossinline action: (obj: T) -> Unit) {
+            applicableIf { obj -> reactiveValue(obj is T) }
+            executes { obj -> action(obj as T) }
+        }
+
         fun toggles(variable: (C) -> ReactiveVariable<Boolean>) {
             toggleState = variable
             executes { ctx ->

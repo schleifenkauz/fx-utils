@@ -15,6 +15,7 @@ import reaktive.value.binding.notEqualTo
 import reaktive.value.forEach
 import reaktive.value.fx.asObservableValue
 import reaktive.value.now
+import reaktive.value.reactiveValue
 
 fun <C> collectActions(body: Action.Collector<C>.() -> Unit): Action.Collector<C> = Action.Collector<C>().apply(body)
 

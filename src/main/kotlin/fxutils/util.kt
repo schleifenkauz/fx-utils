@@ -320,3 +320,10 @@ fun Button.disableIf(condition: ReactiveBoolean): Button {
     disableProperty().bind(condition.asObservableValue())
     return this
 }
+
+fun ScrollPane.letContentFillViewPort(): ScrollPane {
+    val c = content as? Region ?: return this
+    c.minWidthProperty().bind(viewportBoundsProperty().map(Bounds::getWidth))
+    c.minHeightProperty().bind(viewportBoundsProperty().map(Bounds::getHeight))
+    return this
+}
