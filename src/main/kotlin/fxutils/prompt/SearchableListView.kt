@@ -38,7 +38,6 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
     init {
         styleClass("searchable-list")
         setupSearchField()
-        prepareOptionBoxes()
         layout.setMaxSize(300.0, 500.0)
         children.addAll(searchText, layout)
         registerShortcuts()
@@ -92,6 +91,7 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
     }
 
     private fun refilterOptions() {
+        prepareOptionBoxes()
         layout.children.clear()
         filteredOptions = options().filter { option ->
             extractText(option).contains(searchText.text, ignoreCase = true) && filter(option)
@@ -156,6 +156,7 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
         anchor: Point2D? = null, owner: Window? = null,
         initialOption: E? = null, onConfirm: (E) -> Unit
     ) {
+        prepareOptionBoxes()
         refilterOptions()
         if (initialOption in filteredOptions) select(initialOption)
         val w = SubWindow(this, title, type = SubWindow.Type.Popup)

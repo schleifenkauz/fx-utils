@@ -18,7 +18,6 @@ class SubWindow(
         scene.stylesheets.addAll(globalStylesheets)
         initWindowType()
         registerShortcuts()
-        initOwner(owner)
         setOnShowing {
             root.requestFocus()
         }
@@ -49,7 +48,7 @@ class SubWindow(
     }
 
     private fun registerShortcuts() {
-        if (type in setOf(Type.Popup, Type.Prompt, Type.Undecorated)) {
+        if (type in setOf(Type.Popup, Type.Prompt)) {
             scene.registerShortcuts {
                 on("ESCAPE") { hide() }
             }

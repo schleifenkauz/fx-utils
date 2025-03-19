@@ -5,7 +5,6 @@ import javafx.geometry.Bounds
 import javafx.geometry.Point2D
 import javafx.scene.Cursor
 import javafx.scene.Node
-import javafx.scene.control.Button
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.stage.Window
@@ -145,13 +144,16 @@ private fun Region.getCursor(
 
 fun isResizeCursor(cursor: Cursor?) = cursor.toString().endsWith("RESIZE")
 
-fun Button.setupWindowDragButton(window: () -> Window) {
+fun Node.setupWindowDragging(window: () -> Window) {
     var startCords = Point2D(0.0, 0.0)
     setupDragging(
         draggingActive = { true },
-        onPressed = { startCords = Point2D(window().x, window().x) },
+        onPressed = {
+            val w = window()
+            startCords = Point2D(w.x, w.y) },
         relocateBy = { _, _, _, dx, dy ->
-            window().x = startCords.x + dx
-            window().y = startCords.y + dy
+            val w = window()
+            w.x = startCords.x + dx
+            w.y = startCords.y + dy
         })
 }

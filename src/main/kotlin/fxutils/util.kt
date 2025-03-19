@@ -16,6 +16,7 @@ import javafx.geometry.Insets
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.*
 import javafx.scene.input.*
 import javafx.scene.input.KeyCode.ENTER
@@ -24,6 +25,7 @@ import javafx.scene.paint.Color
 import javafx.scene.robot.Robot
 import javafx.stage.Popup
 import javafx.stage.PopupWindow
+import javafx.stage.Stage
 import javafx.stage.Window
 import org.controlsfx.glyphfont.FontAwesome
 import org.controlsfx.glyphfont.Glyph
@@ -70,7 +72,7 @@ inline fun Node.registerShortcut(s: KeyCombination, crossinline action: () -> Un
     }
 }
 
-fun PopupWindow.show(node: Node) {
+fun PopupWindow.showBelow(node: Node) {
     val p = node.localToScreen(0.0, node.prefHeight(-1.0)) ?: return
     show(node, p.x, p.y)
 }
@@ -184,10 +186,20 @@ fun button(text: String = "", onAction: (ev: ActionEvent) -> Unit = {}) =
 fun button(glyph: FontAwesome.Glyph, onAction: (ev: ActionEvent) -> Unit) =
     Button(null, Glyph("FontAwesome", glyph)).also { btn -> btn.setOnAction(onAction) }
 
-fun showPopup(owner: Node, node: Node) = popup(node).show(owner)
+fun showPopup(owner: Node, node: Node) = popup(node).showBelow(owner)
 
 fun Popup.show(owner: Node) {
     val coords = owner.localToScreen(0.0, 0.0)
+    show(owner, coords.x, coords.y)
+}
+
+fun Popup.showBelow(owner: Region) {
+    val coords = owner.localToScreen(0.0, owner.height)
+    show(owner, coords.x, coords.y)
+}
+
+fun Popup.showRightOf(owner: Region) {
+    val coords = owner.localToScreen(owner.width, 0.0)
     show(owner, coords.x, coords.y)
 }
 
@@ -327,3 +339,31 @@ fun ScrollPane.letContentFillViewPort(): ScrollPane {
     c.minHeightProperty().bind(viewportBoundsProperty().map(Bounds::getHeight))
     return this
 }
+
+fun Stage.show(coords: Point2D) {
+    x = coords.x
+    y = coords.y
+    show()
+}
+
+fun Stage.showCentered(owner: Window) {
+    if (this.owner == null) initOwner(owner)
+    centerOnScreen()
+    show()
+}
+
+fun Stage.show(anchorNode: Node, offset: Point2D) {
+    if (this.owner == null) initOwner(anchorNode.scene.window)
+    val pos = anchorNode.localToScreen(offset)
+    show(pos)
+}
+
+fun Stage.showBelow(anchorNode: Region) {
+    show(anchorNode, Point2D(0.0, anchorNode.height))
+}
+
+fun Stage.showRightOf(anchorNode: Region) {
+    show(anchorNode, Point2D(anchorNode.width, 0.0))
+}
+
+fun undecoratedSubWindow(root: Parent) = SubWindow(root, "", SubWindow.Type.Undecorated)
