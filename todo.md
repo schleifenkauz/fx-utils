@@ -1,0 +1,2 @@
+- implement `SearchableListView` as a subtype of `Prompt` (?)
+- Show message popup when hitting enter on invalid text in `TextPrompt`
