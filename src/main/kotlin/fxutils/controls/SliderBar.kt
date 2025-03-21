@@ -4,6 +4,7 @@ import fxutils.label
 import fxutils.prompt.TextPrompt
 import fxutils.registerShortcuts
 import fxutils.styleClass
+import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Label
@@ -69,8 +70,10 @@ class SliderBar<T : Any>(
     }
 
     private fun valueChanged(newValue: T) {
-        bar.progress = converter.toDouble(newValue)
-        valueLabel.text = converter.toString(newValue)
+        Platform.runLater {
+            bar.progress = converter.toDouble(newValue)
+            valueLabel.text = converter.toString(newValue)
+        }
     }
 
     private fun addEventHandlers() {
