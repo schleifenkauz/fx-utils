@@ -102,9 +102,7 @@ fun Region.setupDraggingAndResizing(
 
             MouseEvent.MOUSE_RELEASED -> {
                 if (dragStart != null) {
-                    if (ev.screenX != dragStart!!.x || ev.screenY != dragStart!!.y) {
-                        finishDrag(ev, cursor)
-                    }
+                    finishDrag(ev, cursor)
                     dragStart = null
                     oldBounds = null
                 }
