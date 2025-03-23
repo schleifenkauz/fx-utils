@@ -52,11 +52,11 @@ abstract class Prompt<R, N : Node> {
             window.setOnShown { onReceiveFocus() }
         }
         window.sizeToScene()
-        window.showAndWait()
         if (coords != null) {
             window.x = coords.x
             window.y = coords.y
         } else window.centerOnScreen()
+        window.showAndWait()
         @Suppress("UNCHECKED_CAST")
         return if (commited) result as R else getDefault()
     }
