@@ -18,7 +18,8 @@ class SubWindow(
         scene.stylesheets.addAll(globalStylesheets)
         initWindowType()
         registerShortcuts()
-        setOnShowing {
+        sizeToScene()
+        setOnShown {
             root.requestFocus()
         }
     }
@@ -26,9 +27,15 @@ class SubWindow(
     private fun initWindowType() {
         when (type) {
             Type.Popup -> {
+                var focusTimestamp = 0L
                 focusedProperty().addListener { _, _, hasFocus ->
-                    if (!hasFocus) hide()
+                    if (hasFocus) {
+                        focusTimestamp = System.currentTimeMillis()
+                    } else if (System.currentTimeMillis() - focusTimestamp > 100) { //ugly hack...
+                        hide()
+                    }
                 }
+                initModality(Modality.WINDOW_MODAL)
                 initStyle(StageStyle.TRANSPARENT)
             }
 

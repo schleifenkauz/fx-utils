@@ -16,6 +16,7 @@ open class DetailPane : VBox() {
         val label = Label(name)
         label.prefWidth = LABEL_WIDTH
         HBox.setHgrow(label, Priority.NEVER)
+        HBox.setHgrow(control, Priority.ALWAYS)
         val box = HBox(5.0, label, control) styleClass "detail-item"
         children.add(box)
     }

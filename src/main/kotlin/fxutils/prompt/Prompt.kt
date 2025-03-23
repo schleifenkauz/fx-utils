@@ -15,7 +15,8 @@ import javafx.stage.Window
 abstract class Prompt<R, N : Node> {
     private var commited = false
     private var result: R? = null
-    protected lateinit var window: SubWindow
+    private var _window: SubWindow? = null
+    protected val window get() = _window ?: error("Window for prompt $title not initialized")
 
     protected abstract val content: N
 
@@ -45,9 +46,11 @@ abstract class Prompt<R, N : Node> {
 
     private fun showDialog(layout: Parent, owner: Window?, coords: Point2D?): R {
         commited = false
-        window = SubWindow(layout, title, SubWindow.Type.Prompt)
-        if (owner != null) window.initOwner(owner)
-        window.setOnShown { onReceiveFocus() }
+        if (_window == null) {
+            _window = SubWindow(layout, title, SubWindow.Type.Prompt)
+            if (owner != null) window.initOwner(owner)
+            window.setOnShown { onReceiveFocus() }
+        }
         window.sizeToScene()
         window.showAndWait()
         if (coords != null) {

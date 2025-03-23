@@ -18,7 +18,7 @@ import reaktive.value.binding.map
 import reaktive.value.fx.asObservableValue
 import kotlin.reflect.KMutableProperty0
 
-abstract class SearchableListView<E>(private val title: String) : VBox() {
+abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
     private val searchText = CustomTextField().styleClass("sleek-text-field", "search-field")
     private val layout = VBox().styleClass("options-box")
 
@@ -27,11 +27,12 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
     var selectedOption: E? = null
         private set
 
-    private val confirmOption = event<E>()
-
-    val confirmedOption get() = confirmOption.stream
+    private var _window: SubWindow? = null
+    protected val window get() = _window ?: error("Window for prompt $title not initialized")
 
     private var filter: (E) -> Boolean = { true }
+
+    private var result: E? = null
 
     protected abstract fun options(): List<E>
 
@@ -137,10 +138,8 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
     }
 
     private fun confirm(option: E) {
+        result = option
         hide()
-        runFXWithTimeout {
-            confirmOption.fire(option)
-        }
     }
 
     private fun confirmText(text: String) {
@@ -154,29 +153,31 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
 
     fun showPopup(
         anchor: Point2D? = null, owner: Window? = null,
-        initialOption: E? = null, onConfirm: (E) -> Unit
-    ) {
+        initialOption: E? = null,
+    ): E? {
         prepareOptionBoxes()
         refilterOptions()
         if (initialOption in filteredOptions) select(initialOption)
-        val w = SubWindow(this, title, type = SubWindow.Type.Popup)
+        if (_window == null) {
+            _window = SubWindow(this, title, type = SubWindow.Type.Popup)
+            if (owner != null && window.owner == null) window.initOwner(owner)
+        }
         if (anchor != null) {
-            w.x = anchor.x
-            w.y = anchor.y
-        } else w.centerOnScreen()
-        userData = confirmedOption.observe { _, option -> onConfirm(option) }
-        if (owner != null && w.owner == null) w.initOwner(owner)
-        w.showAndWait()
+            window.x = anchor.x
+            window.y = anchor.y
+        } else window.centerOnScreen()
+        window.showAndWait()
+        return result
     }
 
-    fun showPopup(anchorNode: Region, initialOption: E? = null, onConfirm: (E) -> Unit) {
+    fun showPopup(anchorNode: Region, initialOption: E? = null): E? {
         val anchor = anchorNode.localToScreen(0.0, anchorNode.height)
-        showPopup(anchor, anchorNode.scene.window, initialOption, onConfirm)
+        return showPopup(anchor, anchorNode.scene.window, initialOption)
     }
 
     fun selectorButton(
         property: KMutableProperty0<E>, default: E = property.get(),
-        displayText: (E) -> String = this::displayText
+        displayText: (E) -> String = this::displayText,
     ): Button = button(displayText(property.get())).apply {
         showPopupOnClick(default, property::get) { value ->
             property.set(value)
@@ -186,7 +187,7 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
 
     fun selectorButton(
         property: ReactiveVariable<E>, default: E = property.get(),
-        displayText: (E) -> String = this::displayText
+        displayText: (E) -> String = this::displayText,
     ): Button = button().apply {
         textProperty().bind(property.map(displayText).asObservableValue())
         showPopupOnClick(default, property::get) { value -> property.set(value) }
@@ -196,9 +197,8 @@ abstract class SearchableListView<E>(private val title: String) : VBox() {
         setOnMouseClicked { ev ->
             when (ev.button) {
                 MouseButton.PRIMARY -> {
-                    showPopup(anchorNode = this, initialOption = get.invoke()) { option ->
-                        onSelect(option)
-                    }
+                    val result = showPopup(anchorNode = this, initialOption = get.invoke())
+                    if (result != null) onSelect(result)
                 }
 
                 MouseButton.SECONDARY -> {

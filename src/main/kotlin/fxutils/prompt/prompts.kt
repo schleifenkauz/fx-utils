@@ -14,9 +14,7 @@ fun <T : Any> showSelectorDialog(
     val view = object : SimpleSearchableListView<T>(items, title) {
         override fun extractText(option: T): String = stringConverter(option)
     }
-    var value = initialValue
-    view.showPopup(anchor, owner, initialOption = initialValue) { v -> value = v }
-    return value
+    return view.showPopup(anchor, owner, initialOption = initialValue)
 }
 
 fun <T : Any> showSelectorDialog(
