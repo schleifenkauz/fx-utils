@@ -7,17 +7,25 @@ import org.kordamp.ikonli.Ikon
 import reaktive.value.*
 import reaktive.value.binding.equalTo
 
-class Action<in C> private constructor(
+class Action<C> private constructor(
     val name: String,
     val category: Category,
-    private val description: (C) -> ReactiveString,
+    val description: (C) -> ReactiveString,
     val shortcuts: List<Shortcut>, val icon: (C) -> ReactiveValue<Ikon?>,
-    private val applicability: (C) -> ReactiveBoolean,
+    val applicability: (C) -> ReactiveBoolean,
     val ifNotApplicable: IfNotApplicable,
     val toggleState: (C) -> ReactiveValue<Boolean>?,
-    private val execute: (C, Event?) -> Unit
+    val execute: (C, Event?) -> Unit,
 ) {
     fun withContext(context: C): ContextualizedAction = Contextualized(this, context)
+
+    fun <D> map(name: String = this.name, f: (D) -> C) =
+        Action<D>(
+            name, category, { ctx -> description(f(ctx)) },
+            shortcuts, { ctx -> icon(f(ctx)) },
+            { c -> applicability(f(c)) }, ifNotApplicable,
+            { c -> toggleState(f(c)) }, { c, ev -> execute(f(c), ev) }
+        )
 
     enum class Category {
         Unknown, File, Edit, View;
@@ -32,7 +40,7 @@ class Action<in C> private constructor(
         private var applicability: (C) -> ReactiveBoolean = { reactiveValue(true) },
         private var ifNotApplicable: IfNotApplicable = IfNotApplicable.Hide,
         private var toggleState: (C) -> ReactiveValue<Boolean>? = { null },
-        private var execute: (C, ev: Event?) -> Unit = { _, _ -> }
+        private var execute: (C, ev: Event?) -> Unit = { _, _ -> },
     ) {
         fun description(desc: String) {
             description = { _ -> reactiveValue(desc) }
@@ -56,7 +64,7 @@ class Action<in C> private constructor(
             icon = { reactiveValue(ikon) }
         }
 
-        fun icon(react: (C) -> ReactiveValue<Ikon>) {
+        fun icon(react: (C) -> ReactiveValue<Ikon?>) {
             icon = react
         }
 
@@ -102,6 +110,17 @@ class Action<in C> private constructor(
             ifNotApplicable = consequence
         }
 
+        fun <D> buildFrom(action: Action<D>, f: (C) -> D) {
+            description { c -> action.description(f(c)) }
+            category = action.category
+            icon { c -> action.icon(f(c)) }
+            shortcuts.addAll(action.shortcuts)
+            applicableIf { c -> action.applicability(f(c)) }
+            toggleState = { c -> action.toggleState(f(c)) }
+            executes { c, ev -> action.execute(f(c), ev) }
+            ifNotApplicable = action.ifNotApplicable
+        }
+
         fun build(): Action<C> = Action(
             name, category, description,
             shortcuts, icon,
@@ -126,6 +145,12 @@ class Action<in C> private constructor(
             actions.addAll(collector.actions)
         }
 
+        fun <D> addAll(collector: Collector<D>, f: (C) -> D) {
+            for (action in collector.actions) {
+                add(action.map(action.name, f))
+            }
+        }
+
         inline fun addAction(name: String, configure: Builder<C>.() -> Unit) {
             val builder = Builder<C>(name, category = category)
             builder.configure()
@@ -141,7 +166,7 @@ class Action<in C> private constructor(
 
     private class Contextualized<C>(
         override val wrapped: Action<C>,
-        private val context: C
+        private val context: C,
     ) : ContextualizedAction {
         override val icon: ReactiveValue<Ikon?> = wrapped.icon(context)
 
