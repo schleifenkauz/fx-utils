@@ -6,6 +6,7 @@ import javafx.event.Event
 import org.kordamp.ikonli.Ikon
 import reaktive.value.*
 import reaktive.value.binding.equalTo
+import reaktive.value.binding.map
 
 class Action<C> private constructor(
     val name: String,
@@ -86,12 +87,24 @@ class Action<C> private constructor(
             executes { obj -> action(obj as T) }
         }
 
-        fun toggles(variable: (C) -> ReactiveVariable<Boolean>) {
+        fun toggles(
+            variable: (C) -> ReactiveVariable<Boolean>,
+            toggle: (ev: Event?, ctx: C, now: Boolean) -> Boolean = { _, _, now -> !now },
+        ) {
             toggleState = variable
-            executes { ctx ->
+            executes { ctx, ev ->
                 val v = variable(ctx)
-                v.now = !v.now
+                v.now = toggle(ev, ctx, v.now)
             }
+        }
+
+        fun toggles(
+            variable: (C) -> ReactiveVariable<Boolean>,
+            toggle: (ev: Event?, ctx: C, now: Boolean) -> Boolean = { _, _, now -> !now },
+            whenTrue: Ikon, whenFalse: Ikon,
+        ) {
+            toggles(variable, toggle)
+            icon { ctx -> variable(ctx).map { now -> if (now) whenTrue else whenFalse } }
         }
 
         fun <T> selects(value: T, variable: (C) -> ReactiveVariable<T>) {
