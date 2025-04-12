@@ -7,14 +7,14 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 
-open class DetailPane : VBox() {
+open class DetailPane(private val labelWidth: Double = LABEL_WIDTH) : VBox() {
     init {
         styleClass("detail-pane", "tool-pane")
     }
 
     fun addItem(name: String, control: Node) {
         val label = Label(name)
-        label.prefWidth = LABEL_WIDTH
+        label.prefWidth = labelWidth
         HBox.setHgrow(label, Priority.NEVER)
         HBox.setHgrow(control, Priority.ALWAYS)
         val box = HBox(5.0, label, control) styleClass "detail-item"

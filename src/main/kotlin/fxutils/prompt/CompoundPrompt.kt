@@ -4,10 +4,12 @@ import javafx.scene.Node
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 
-open class CompoundPrompt<R : Any>(title: String) : ConfirmablePrompt<R, DetailPane>(title) {
+open class CompoundPrompt<R : Any>(
+    title: String, labelWidth: Double = DetailPane.LABEL_WIDTH,
+) : ConfirmablePrompt<R, DetailPane>(title) {
     private lateinit var confirm: () -> R?
 
-    final override val content: DetailPane = DetailPane()
+    final override val content: DetailPane = DetailPane(labelWidth)
 
     init {
         VBox.setVgrow(content, Priority.ALWAYS)
