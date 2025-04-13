@@ -1,8 +1,8 @@
 package fxutils
 
+import fxutils.impl.ResizeHelper
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.layout.Region
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
@@ -18,7 +18,6 @@ class SubWindow(
         scene.stylesheets.addAll(globalStylesheets)
         initWindowType()
         registerShortcuts()
-        sizeToScene()
         setOnShown {
             root.requestFocus()
         }
@@ -64,14 +63,6 @@ class SubWindow(
                 on("Ctrl+W") { hide() }
             }
         }
-    }
-
-    @Suppress("unused")
-    fun autoResize() {
-        require(root is Region)
-        root.widthProperty().addListener { _, _, _ -> sizeToScene() }
-        root.widthProperty().addListener { _, _, _ -> sizeToScene() }
-        isResizable = false
     }
 
     fun showOrBringToFront() {
