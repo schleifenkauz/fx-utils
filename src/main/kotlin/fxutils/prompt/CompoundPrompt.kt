@@ -15,6 +15,10 @@ open class CompoundPrompt<R : Any>(
         VBox.setVgrow(content, Priority.ALWAYS)
     }
 
+    override fun onReceiveFocus() {
+        content.items().firstOrNull()?.control?.requestFocus()
+    }
+
     fun <N : Node> addItem(name: String, node: N): N {
         content.addItem(name, node)
         return node
