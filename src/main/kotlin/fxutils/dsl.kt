@@ -67,6 +67,8 @@ class MenuBuilder(private val name: String) {
     fun build() = Menu(name, null, *items.toTypedArray())
 }
 
+fun String.escapeUnderscores() = replace("_", "__")
+
 /**
  * Create a [Button] and apply the given [block] to it.
  */
