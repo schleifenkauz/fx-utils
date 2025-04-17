@@ -5,6 +5,7 @@ import javafx.scene.Node
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 
 open class DetailPane(private val labelWidth: Double = LABEL_WIDTH) : VBox() {
@@ -14,7 +15,7 @@ open class DetailPane(private val labelWidth: Double = LABEL_WIDTH) : VBox() {
         styleClass("detail-pane", "tool-pane")
     }
 
-    fun addItem(name: String, control: Node) {
+    fun addItem(name: String, control: Node): Region {
         val label = Label(name)
         label.prefWidth = labelWidth
         HBox.setHgrow(label, Priority.NEVER)
@@ -22,6 +23,7 @@ open class DetailPane(private val labelWidth: Double = LABEL_WIDTH) : VBox() {
         val box = HBox(5.0, label, control) styleClass "detail-item"
         children.add(box)
         items.add(Item(name, control))
+        return box
     }
 
     fun addLargeItem(name: String, control: Node) {

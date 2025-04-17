@@ -367,3 +367,9 @@ fun Stage.showRightOf(anchorNode: Region) {
 }
 
 fun undecoratedSubWindow(root: Parent) = SubWindow(root, "", SubWindow.Type.Undecorated)
+
+fun <W: Window> W.defaultSize(width: Double, height: Double): W {
+    this.width = width
+    this.height = height
+    return this
+}
