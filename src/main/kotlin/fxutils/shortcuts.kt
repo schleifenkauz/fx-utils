@@ -12,6 +12,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
+import javafx.scene.input.MouseEvent
 import java.lang.ref.WeakReference
 import java.text.ParseException
 import java.util.*
@@ -59,6 +60,7 @@ data class Shortcut(val key: KeyCode?, val control: ModifierValue, val alt: Modi
                 DOWN -> append("$name + ")
                 UP -> {
                 }
+
                 MAYBE -> append("$name? + ")
             }
         }
@@ -69,14 +71,14 @@ data class Shortcut(val key: KeyCode?, val control: ModifierValue, val alt: Modi
      * Tests whether the given key event is recognized by this shortcut
      */
     fun matches(ev: KeyEvent): Boolean = when {
-        ev.code != key                       -> false
-        ev.isAltDown && alt == UP            -> false
-        !ev.isAltDown && alt == DOWN         -> false
-        ev.isControlDown && control == UP    -> false
+        ev.code != key -> false
+        ev.isAltDown && alt == UP -> false
+        !ev.isAltDown && alt == DOWN -> false
+        ev.isControlDown && control == UP -> false
         !ev.isControlDown && control == DOWN -> false
-        ev.isShiftDown && shift == UP        -> false
-        !ev.isShiftDown && shift == DOWN     -> false
-        else                                 -> true
+        ev.isShiftDown && shift == UP -> false
+        !ev.isShiftDown && shift == DOWN -> false
+        else -> true
     }
 
     /**
@@ -152,7 +154,7 @@ class KeyEventHandlerBody<out R> constructor(val receiver: R, private val event:
         code: KeyCode,
         builder: ShortcutBuilder.() -> Unit = {},
         consume: Boolean = true,
-        action: R.(KeyEvent) -> Unit
+        action: R.(KeyEvent) -> Unit,
     ) {
         val shortcut = ShortcutBuilder(code).apply(builder).build()
         on(shortcut, consume, action)
@@ -192,27 +194,33 @@ private fun parseShortcut(s: String): Shortcut {
                 checkNotSet(ctrl, idx, tok)
                 ctrl = DOWN
             }
+
             "CTRL?" -> {
                 checkNotSet(ctrl, idx, tok)
                 ctrl = MAYBE
             }
+
             "SHIFT" -> {
                 checkNotSet(shift, idx, tok)
                 shift = DOWN
             }
+
             "SHIFT?" -> {
                 checkNotSet(shift, idx, tok)
                 shift = MAYBE
             }
+
             "ALT" -> {
                 checkNotSet(alt, idx, tok)
                 alt = DOWN
             }
+
             "ALT?" -> {
                 checkNotSet(alt, idx, tok)
                 alt = MAYBE
             }
-            else     -> try {
+
+            else -> try {
                 code = KeyCode.valueOf(tok)
             } catch (e: IllegalArgumentException) {
                 throw ParseException("Illegal token '$tok'", idx)
@@ -225,6 +233,7 @@ private fun parseShortcut(s: String): Shortcut {
             '+' -> tokenComplete(idx)
             ' ' -> {
             }
+
             else -> builder.append(c)
         }
     }
@@ -238,7 +247,7 @@ private fun parseShortcut(s: String): Shortcut {
  */
 inline fun Node.registerShortcuts(
     eventType: EventType<KeyEvent> = KeyEvent.KEY_RELEASED,
-    crossinline handle: KeyEventHandlerBody<Unit>.() -> Unit
+    crossinline handle: KeyEventHandlerBody<Unit>.() -> Unit,
 ) {
     addEventHandler(eventType) { ev: KeyEvent ->
         KeyEventHandlerBody(Unit, ev).handle()
@@ -251,7 +260,7 @@ inline fun Node.registerShortcuts(
 inline fun <R : Any> Node.registerShortcuts(
     receiver: R,
     eventType: EventType<KeyEvent> = KeyEvent.KEY_RELEASED,
-    crossinline handle: KeyEventHandlerBody<R>.() -> Unit
+    crossinline handle: KeyEventHandlerBody<R>.() -> Unit,
 ) {
     val ref = WeakReference(receiver)
     addEventHandler(eventType) { ev ->
@@ -265,9 +274,24 @@ inline fun <R : Any> Node.registerShortcuts(
  */
 inline fun Scene.registerShortcuts(
     eventType: EventType<KeyEvent> = KeyEvent.KEY_RELEASED,
-    crossinline handle: KeyEventHandlerBody<Unit>.() -> Unit
+    crossinline handle: KeyEventHandlerBody<Unit>.() -> Unit,
 ) {
     addEventFilter(eventType) { ev: KeyEvent ->
         KeyEventHandlerBody(Unit, ev).handle()
     }
 }
+
+val Alt get() = "Alt"
+val Shift get() = "Shift"
+val Ctrl get() = "Ctrl"
+val Meta get() = "Meta"
+
+val noModifiers get() = emptySet<String>()
+
+val MouseEvent.modifiers: Set<String>
+    get() = buildSet {
+        if (isAltDown) add(Alt)
+        if (isShiftDown) add(Shift)
+        if (isControlDown) add(Ctrl)
+        if (isMetaDown) add(Meta)
+    }

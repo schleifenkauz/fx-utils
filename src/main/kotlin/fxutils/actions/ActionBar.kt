@@ -2,9 +2,13 @@ package fxutils.actions
 
 import fxutils.neverHGrow
 import fxutils.styleClass
+import javafx.application.Platform
 import javafx.beans.binding.Bindings
+import javafx.geometry.Insets
+import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.layout.HBox
+import javafx.scene.layout.StackPane
 
 open class ActionBar private constructor(
     private val actions: MutableList<ContextualizedAction>,
@@ -46,14 +50,24 @@ open class ActionBar private constructor(
         buttons[action.wrapped] = button
         if (button.isVisible) children.add(button)
         button.visibleProperty().addListener { _, _, visible ->
-            if (visible) {
-                var index = children.binarySearchBy(idx) { btn -> indices[btn] }
-                if (index >= 0) return@addListener
-                index = -(index + 1)
-                children.add(index, button)
-            } else children.remove(button)
+            Platform.runLater {
+                if (visible) {
+                    var index = children.binarySearchBy(idx) { btn -> indices[btn] }
+                    if (index >= 0) return@runLater
+                    index = -(index + 1)
+                    children.add(index, button)
+                } else children.remove(button)
+            }
         }
     }
 
     fun getButton(action: Action<*>) = buttons.getValue(action)
+
+    fun floating(pos: Pos): ActionBar {
+        maxWidth = prefWidth(-1.0)
+        maxHeight = prefHeight(-1.0)
+        padding = Insets(5.0)
+        StackPane.setAlignment(this, pos)
+        return this
+    }
 }

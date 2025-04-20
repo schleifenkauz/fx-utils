@@ -8,7 +8,7 @@ import reaktive.value.*
 import reaktive.value.binding.equalTo
 import reaktive.value.binding.map
 
-class Action<C> private constructor(
+class Action<in C> private constructor(
     val name: String,
     val category: Category,
     val description: (C) -> ReactiveString,
@@ -87,11 +87,15 @@ class Action<C> private constructor(
             executes { obj -> action(obj as T) }
         }
 
+        fun toggleState(state: (C) -> ReactiveValue<Boolean>) {
+            toggleState = state
+        }
+
         fun toggles(
             variable: (C) -> ReactiveVariable<Boolean>,
             toggle: (ev: Event?, ctx: C, now: Boolean) -> Boolean = { _, _, now -> !now },
         ) {
-            toggleState = variable
+            toggleState(variable)
             executes { ctx, ev ->
                 val v = variable(ctx)
                 v.now = toggle(ev, ctx, v.now)

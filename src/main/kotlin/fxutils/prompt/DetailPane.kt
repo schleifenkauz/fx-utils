@@ -12,7 +12,7 @@ open class DetailPane(private val labelWidth: Double = LABEL_WIDTH) : VBox() {
     private val items = mutableListOf<Item>()
 
     init {
-        styleClass("detail-pane", "tool-pane")
+        styleClass("detail-pane")
     }
 
     fun addItem(name: String, control: Node): Region {

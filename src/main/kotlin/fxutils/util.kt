@@ -27,8 +27,6 @@ import javafx.stage.Popup
 import javafx.stage.PopupWindow
 import javafx.stage.Stage
 import javafx.stage.Window
-import org.controlsfx.glyphfont.FontAwesome
-import org.controlsfx.glyphfont.Glyph
 import reaktive.value.ReactiveBoolean
 import reaktive.value.fx.asObservableValue
 import java.util.*
@@ -219,7 +217,7 @@ fun <N : Node> N.alwaysVGrow() = also { VBox.setVgrow(it, Priority.ALWAYS) }
 
 fun hspace(width: Double) = Region().apply { prefWidth = width }
 
-fun infiniteSpace() = Region().alwaysHGrow()
+fun infiniteSpace() = Region().alwaysHGrow().alwaysVGrow()
 
 fun <N : Node> N.centerChildren() = also {
     when (it) {
@@ -370,3 +368,7 @@ fun <W: Window> W.defaultSize(width: Double, height: Double): W {
     this.height = height
     return this
 }
+
+fun <N: Region> N.pad(value: Double): N = also { padding = Insets(value) }
+
+fun Color.opacity(opacity: Double) = deriveColor(0.0, 0.0, 0.0, opacity)

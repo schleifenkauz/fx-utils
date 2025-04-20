@@ -1,8 +1,11 @@
 package fxutils
 
+import com.sun.javafx.event.EventDispatchChainImpl
 import fxutils.impl.ResizeHelper
+import javafx.event.EventDispatchChain
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
@@ -54,12 +57,10 @@ class SubWindow(
     }
 
     private fun registerShortcuts() {
-        if (type in setOf(Type.Popup, Type.Prompt)) {
-            scene.registerShortcuts {
+        scene.registerShortcuts {
+            if (type in setOf(Type.Popup, Type.Prompt)) {
                 on("ESCAPE") { hide() }
-            }
-        } else {
-            scene.registerShortcuts {
+            } else {
                 on("Ctrl+W") { hide() }
             }
         }

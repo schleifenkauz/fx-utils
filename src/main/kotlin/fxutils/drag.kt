@@ -11,7 +11,6 @@ import javafx.stage.Window
 import kotlin.math.absoluteValue
 
 fun Node.setupDragging(
-    draggingActive: () -> Boolean = { true },
     defaultCursor: Cursor = Cursor.OPEN_HAND, dragCursor: Cursor = Cursor.CLOSED_HAND,
     onPressed: (ev: MouseEvent) -> Unit = {},
     onReleased: (ev: MouseEvent) -> Unit = {},
@@ -22,7 +21,7 @@ fun Node.setupDragging(
     var oldBounds: Bounds? = null
     cursor = defaultCursor
     addEventHandler(MouseEvent.ANY) { ev ->
-        if (!draggingActive()) return@addEventHandler
+        if (ev.modifiers.isNotEmpty()) return@addEventHandler
         when (ev.eventType) {
             MouseEvent.MOUSE_PRESSED -> {
                 cursor = dragCursor
@@ -58,7 +57,6 @@ fun Node.setupDragging(
 
 fun Region.setupDraggingAndResizing(
     canUserChangeWidth: Boolean, canUserChangeHeight: Boolean,
-    moveActive: () -> Boolean, resizeActive: () -> Boolean,
     drag: (x: Double, y: Double) -> Unit,
     resize: (Bounds, Double, Double, Cursor, MouseEvent) -> Unit,
     startDrag: (MouseEvent, Cursor) -> Boolean = { _, _ -> true },
@@ -68,7 +66,6 @@ fun Region.setupDraggingAndResizing(
     var dragStart: Point2D? = null
     var oldBounds: Bounds? = null
     addEventHandler(MouseEvent.ANY) { ev ->
-        if (!moveActive() && !resizeActive()) return@addEventHandler
         when (ev.eventType) {
             MouseEvent.MOUSE_PRESSED -> {
                 if (dragStart == null && cursor != null) {
@@ -94,7 +91,6 @@ fun Region.setupDraggingAndResizing(
 
             MouseEvent.MOUSE_MOVED -> {
                 cursor = getCursor(
-                    moveActive(), resizeActive(),
                     ev, canUserChangeWidth, canUserChangeHeight, ev.isPrimaryButtonDown
                 )
                 return@addEventHandler
@@ -115,7 +111,6 @@ fun Region.setupDraggingAndResizing(
 }
 
 private fun Region.getCursor(
-    moveActive: Boolean, resizeActive: Boolean,
     ev: MouseEvent, canUserChangeWidth: Boolean, canUserChangeHeight: Boolean, closeHand: Boolean
 ): Cursor {
     val x = ev.x
@@ -125,8 +120,8 @@ private fun Region.getCursor(
     val dx = (x - prefWidth).absoluteValue
     val dy = (y - prefHeight).absoluteValue
     return when {
-        moveActive -> if (closeHand) Cursor.CLOSED_HAND else Cursor.OPEN_HAND
-        !resizeActive -> if (closeHand) cursor else Cursor.DEFAULT
+        ev.modifiers.isEmpty() -> if (closeHand) Cursor.CLOSED_HAND else Cursor.OPEN_HAND
+        !ev.isControlDown -> if (closeHand) cursor else Cursor.DEFAULT
         x.absoluteValue < tx && y.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.NW_RESIZE
         x.absoluteValue < tx && dy.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.SW_RESIZE
         dx < tx && y.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.NE_RESIZE
@@ -145,7 +140,6 @@ fun isResizeCursor(cursor: Cursor?) = cursor.toString().endsWith("RESIZE")
 fun Node.setupWindowDragging(window: () -> Window) {
     var startCords = Point2D(0.0, 0.0)
     setupDragging(
-        draggingActive = { true },
         onPressed = {
             val w = window()
             startCords = Point2D(w.x, w.y) },
