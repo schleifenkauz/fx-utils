@@ -121,7 +121,7 @@ private fun Region.getCursor(
     val dy = (y - prefHeight).absoluteValue
     return when {
         ev.modifiers.isEmpty() -> if (closeHand) Cursor.CLOSED_HAND else Cursor.OPEN_HAND
-        !ev.isControlDown -> if (closeHand) cursor else Cursor.DEFAULT
+        !ev.isControlDown && !ev.isAltDown -> if (closeHand) cursor else Cursor.DEFAULT
         x.absoluteValue < tx && y.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.NW_RESIZE
         x.absoluteValue < tx && dy.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.SW_RESIZE
         dx < tx && y.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.NE_RESIZE

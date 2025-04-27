@@ -28,7 +28,7 @@ class SubWindow(
 
     private fun initWindowType() {
         when (type) {
-            Type.Popup -> {
+            Type.Popup, Type.Prompt -> {
                 var focusTimestamp = 0L
                 focusedProperty().addListener { _, _, hasFocus ->
                     if (hasFocus) {
@@ -39,11 +39,6 @@ class SubWindow(
                 }
                 initModality(Modality.WINDOW_MODAL)
                 initStyle(StageStyle.TRANSPARENT)
-            }
-
-            Type.Prompt -> {
-                initStyle(StageStyle.TRANSPARENT)
-                initModality(Modality.WINDOW_MODAL)
             }
 
             Type.ToolWindow -> {

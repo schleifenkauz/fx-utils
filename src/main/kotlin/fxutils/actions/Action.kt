@@ -78,12 +78,12 @@ class Action<in C> private constructor(
         }
 
         inline fun <reified T : C> executesOn(crossinline action: (obj: T, ev: Event?) -> Unit) {
-            applicableIf { obj -> reactiveValue(obj is T) }
+            applicableWhen { obj -> reactiveValue(obj is T) }
             executes { obj, ev -> action(obj as T, ev) }
         }
 
         inline fun <reified T : C> executesOn(crossinline action: (obj: T) -> Unit) {
-            applicableIf { obj -> reactiveValue(obj is T) }
+            applicableWhen { obj -> reactiveValue(obj is T) }
             executes { obj -> action(obj as T) }
         }
 
@@ -119,8 +119,12 @@ class Action<in C> private constructor(
             }
         }
 
-        fun applicableIf(predicate: (C) -> ReactiveBoolean) {
+        fun applicableWhen(predicate: (C) -> ReactiveBoolean) {
             applicability = predicate
+        }
+
+        fun applicableIf(predicate: (C) -> Boolean) {
+            applicability = { ctx -> reactiveValue(predicate(ctx)) }
         }
 
         fun ifNotApplicable(consequence: IfNotApplicable) {
@@ -132,7 +136,7 @@ class Action<in C> private constructor(
             category = action.category
             icon { c -> action.icon(f(c)) }
             shortcuts.addAll(action.shortcuts)
-            applicableIf { c -> action.applicability(f(c)) }
+            applicableWhen { c -> action.applicability(f(c)) }
             toggleState = { c -> action.toggleState(f(c)) }
             executes { c, ev -> action.execute(f(c), ev) }
             ifNotApplicable = action.ifNotApplicable

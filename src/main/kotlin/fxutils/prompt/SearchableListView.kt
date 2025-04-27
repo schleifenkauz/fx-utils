@@ -2,7 +2,9 @@ package fxutils.prompt
 
 import fxutils.*
 import fxutils.PseudoClasses.SELECTED
+import javafx.event.Event
 import javafx.geometry.Point2D
+import javafx.scene.Scene
 import javafx.scene.control.Button
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
@@ -12,7 +14,6 @@ import javafx.stage.Window
 import org.controlsfx.control.textfield.CustomTextField
 import org.kordamp.ikonli.javafx.FontIcon
 import org.kordamp.ikonli.material2.Material2MZ
-import reaktive.event.event
 import reaktive.value.ReactiveVariable
 import reaktive.value.binding.map
 import reaktive.value.fx.asObservableValue
@@ -173,6 +174,18 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
     fun showPopup(anchorNode: Region, initialOption: E? = null): E? {
         val anchor = anchorNode.localToScreen(0.0, anchorNode.height)
         return showPopup(anchor, anchorNode.scene.window, initialOption)
+    }
+
+    fun showPopup(ev: Event?, initialOption: E? = null): E? {
+        if (ev == null) return showPopup()
+        val anchorNode = ev.source as? Region
+        return if (anchorNode != null) showPopup(anchorNode, initialOption)
+        else when (val target = ev.target) {
+            is Scene -> showPopup(owner = target.window)
+            is Region -> showPopup(target, initialOption = initialOption)
+            is Window -> showPopup(owner = target, initialOption = initialOption)
+            else -> showPopup(initialOption = initialOption)
+        }
     }
 
     fun selectorButton(
