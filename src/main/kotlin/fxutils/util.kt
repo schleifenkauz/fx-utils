@@ -27,8 +27,11 @@ import javafx.stage.Popup
 import javafx.stage.PopupWindow
 import javafx.stage.Stage
 import javafx.stage.Window
+import org.controlsfx.control.ToggleSwitch
 import reaktive.value.ReactiveBoolean
+import reaktive.value.ReactiveVariable
 import reaktive.value.fx.asObservableValue
+import reaktive.value.fx.asProperty
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
@@ -269,6 +272,15 @@ fun Dragboard.hasFiles(extension: String) =
 
 fun Dragboard.hasFile(extension: String): Boolean = hasFiles(extension) && files.size == 1
 
+fun ToggleSwitch.sync(variable: ReactiveVariable<Boolean>): ToggleSwitch {
+    selectedProperty().bindBidirectional(variable.asProperty())
+    return this
+}
+
+fun Spinner<Int>.sync(variable: ReactiveVariable<Int>): Spinner<Int> {
+    valueFactory.valueProperty().bindBidirectional(variable.asProperty())
+    return this
+}
 
 fun <T> runOnApplicationThread(action: () -> T): T {
     val future = CompletableFuture<T>()
