@@ -1,11 +1,7 @@
 package fxutils
 
-import com.sun.javafx.event.EventDispatchChainImpl
-import fxutils.impl.ResizeHelper
-import javafx.event.EventDispatchChain
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
@@ -28,7 +24,7 @@ class SubWindow(
 
     private fun initWindowType() {
         when (type) {
-            Type.Popup, Type.Prompt -> {
+            Type.Popup -> {
                 var focusTimestamp = 0L
                 focusedProperty().addListener { _, _, hasFocus ->
                     if (hasFocus) {
@@ -37,6 +33,11 @@ class SubWindow(
                         hide()
                     }
                 }
+                initModality(Modality.WINDOW_MODAL)
+                initStyle(StageStyle.TRANSPARENT)
+            }
+
+            Type.Prompt -> {
                 initModality(Modality.WINDOW_MODAL)
                 initStyle(StageStyle.TRANSPARENT)
             }

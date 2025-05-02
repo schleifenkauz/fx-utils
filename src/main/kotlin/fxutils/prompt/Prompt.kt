@@ -22,6 +22,8 @@ abstract class Prompt<R, N : Node> {
 
     protected abstract val title: String
 
+    protected open val windowType get() = SubWindow.Type.Popup
+
     protected fun commit(result: R) {
         commited = true
         this.result = result
@@ -47,7 +49,7 @@ abstract class Prompt<R, N : Node> {
     private fun showDialog(layout: Parent, owner: Window?, coords: Point2D?): R {
         commited = false
         if (_window == null) {
-            _window = SubWindow(layout, title, SubWindow.Type.Prompt)
+            _window = SubWindow(layout, title, windowType)
             if (owner != null) window.initOwner(owner)
             window.setOnShown { onReceiveFocus() }
         }
