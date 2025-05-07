@@ -1,5 +1,6 @@
 package fxutils.prompt
 
+import fxutils.SubWindow
 import fxutils.button
 import fxutils.shortcut
 import fxutils.styleClass
@@ -13,6 +14,9 @@ import javafx.scene.layout.VBox
 abstract class ConfirmablePrompt<R : Any, N : Node>(final override val title: String) : Prompt<R?, N>() {
     val cancelButton = button("Cancel") { commit(null) }
     val confirmButton = button("Confirm") { commit(confirm()) }
+
+    override val windowType: SubWindow.Type
+        get() = SubWindow.Type.Prompt
 
     override fun getDefault(): R? = null
 
