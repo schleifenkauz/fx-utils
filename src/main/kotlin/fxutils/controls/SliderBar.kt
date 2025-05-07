@@ -14,17 +14,19 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import reaktive.Observer
-import reaktive.value.ReactiveString
-import reaktive.value.ReactiveVariable
-import reaktive.value.forEach
-import reaktive.value.now
+import reaktive.value.*
 
 class SliderBar<T : Any>(
     val value: ReactiveVariable<T>,
     name: ReactiveString,
     private val converter: Converter<T>,
-    private val style: Style = Style.Regular
+    private val style: Style = Style.Regular,
 ) : StackPane() {
+    constructor(
+        value: ReactiveVariable<T>, name: String, converter: Converter<T>,
+        style: Style = Style.Regular,
+    ) : this(value, reactiveValue(name), converter, style)
+
     private val bar = ProgressBar()
     private val nameLabel = label(name)
     private val valueLabel = Label()

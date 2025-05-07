@@ -277,6 +277,11 @@ fun ToggleSwitch.sync(variable: ReactiveVariable<Boolean>): ToggleSwitch {
     return this
 }
 
+fun CheckBox.sync(variable: ReactiveVariable<Boolean>): CheckBox {
+    selectedProperty().bindBidirectional(variable.asProperty())
+    return this
+}
+
 fun Spinner<Int>.sync(variable: ReactiveVariable<Int>): Spinner<Int> {
     valueFactory.valueProperty().bindBidirectional(variable.asProperty())
     return this
