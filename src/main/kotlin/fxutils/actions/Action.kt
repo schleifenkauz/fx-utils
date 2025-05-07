@@ -20,12 +20,16 @@ class Action<in C> private constructor(
 ) {
     fun withContext(context: C): ContextualizedAction = Contextualized(this, context)
 
-    fun <D> map(name: String = this.name, f: (D) -> C) =
+    fun <D> map(name: String = this.name, f: (D) -> C?) =
         Action<D>(
-            name, category, { ctx -> description(f(ctx)) },
-            shortcuts, { ctx -> icon(f(ctx)) },
-            { c -> applicability(f(c)) }, ifNotApplicable,
-            { c -> toggleState(f(c)) }, { c, ev -> execute(f(c), ev) }
+            name, category, { ctx -> f(ctx)?.let(description) ?: reactiveValue("<not applicable>") },
+            shortcuts, { ctx -> f(ctx)?.let(icon) ?: reactiveValue(null) },
+            { c -> f(c)?.let(applicability) ?: reactiveValue(false) }, ifNotApplicable,
+            { c -> f(c)?.let(toggleState) ?: reactiveVariable(false) }, { c, ev ->
+                val target = f(c)
+                if (target != null) execute(target, ev)
+                else System.err.println("Action $name is not applicable on $c")
+            }
         )
 
     enum class Category {
@@ -166,10 +170,14 @@ class Action<in C> private constructor(
             actions.addAll(collector.actions)
         }
 
-        fun <D> addAll(collector: Collector<D>, f: (C) -> D) {
+        fun <D: Any> addAll(collector: Collector<D>, f: (C) -> D?) {
             for (action in collector.actions) {
                 add(action.map(action.name, f))
             }
+        }
+
+        fun <D:Any> add(action: Action<D>, name: String = action.name, f: (C) -> D?) {
+            add(action.map(name, f))
         }
 
         inline fun addAction(name: String, configure: Builder<C>.() -> Unit) {
