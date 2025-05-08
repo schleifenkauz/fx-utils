@@ -4,6 +4,9 @@ import fxutils.label
 import fxutils.prompt.TextPrompt
 import fxutils.registerShortcuts
 import fxutils.styleClass
+import fxutils.undo.NoUndoManager
+import fxutils.undo.UndoManager
+import fxutils.undo.VariableEdit
 import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -18,13 +21,14 @@ import reaktive.value.*
 
 class SliderBar<T : Any>(
     val value: ReactiveVariable<T>,
-    name: ReactiveString,
+    private val name: ReactiveString,
     private val converter: Converter<T>,
     private val style: Style = Style.Regular,
+    private val undoManager: UndoManager? = null
 ) : StackPane() {
     constructor(
         value: ReactiveVariable<T>, name: String, converter: Converter<T>,
-        style: Style = Style.Regular,
+        style: Style = Style.Regular, undoManager: UndoManager? = null
     ) : this(value, reactiveValue(name), converter, style)
 
     private val bar = ProgressBar()
@@ -61,7 +65,7 @@ class SliderBar<T : Any>(
             }
             on("ENTER") {
                 val v = converter.fromLiteral(valueInput.text) ?: return@on
-                value.now = v
+                updateValue(v)
                 showName()
             }
         }
@@ -84,18 +88,25 @@ class SliderBar<T : Any>(
                 MouseEvent.MOUSE_ENTERED -> showValue()
                 MouseEvent.MOUSE_PRESSED -> if (ev.button == MouseButton.PRIMARY) setValueFromXCoordinate(ev.x)
                 MouseEvent.MOUSE_DRAGGED -> if (ev.button == MouseButton.PRIMARY) setValueFromXCoordinate(ev.x)
-                MouseEvent.MOUSE_RELEASED -> value.now = converter.fromDouble(bar.progress)
+                MouseEvent.MOUSE_RELEASED -> updateValue(converter.fromDouble(bar.progress))
                 MouseEvent.MOUSE_EXITED -> showName()
                 MouseEvent.MOUSE_CLICKED -> {
                     if (ev.button == MouseButton.SECONDARY) {
                         val v = Prompt().showDialog(anchorNode = this) ?: return@addEventHandler
-                        value.now = v
+                        updateValue(v)
                     } else {
                         showValue()
                     }
                 }
             }
         }
+    }
+
+    private fun updateValue(v: T) {
+        val oldValue = value.now
+        if (v == oldValue) return
+        value.now = v
+        undoManager?.record(VariableEdit(value, oldValue, v, "Update ${name.now}"))
     }
 
     private inner class Prompt : TextPrompt<T>(nameLabel.text, converter.toString(value.now)) {
