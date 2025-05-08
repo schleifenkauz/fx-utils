@@ -24,12 +24,13 @@ class SliderBar<T : Any>(
     private val name: ReactiveString,
     private val converter: Converter<T>,
     private val style: Style = Style.Regular,
-    private val undoManager: UndoManager? = null
+    private val undoManager: UndoManager? = null,
+    private val updateActionDescription: String? = null
 ) : StackPane() {
     constructor(
-        value: ReactiveVariable<T>, name: String, converter: Converter<T>,
-        style: Style = Style.Regular, undoManager: UndoManager? = null
-    ) : this(value, reactiveValue(name), converter, style)
+        value: ReactiveVariable<T>, name: String, converter: Converter<T>, style: Style = Style.Regular,
+        undoManager: UndoManager? = null, updateActionDescription: String? = null
+    ) : this(value, reactiveValue(name), converter, style, undoManager, updateActionDescription)
 
     private val bar = ProgressBar()
     private val nameLabel = label(name)
@@ -106,7 +107,8 @@ class SliderBar<T : Any>(
         val oldValue = value.now
         if (v == oldValue) return
         value.now = v
-        undoManager?.record(VariableEdit(value, oldValue, v, "Update ${name.now}"))
+        val actionDescription = updateActionDescription ?: "Update ${name.now}"
+        undoManager?.record(VariableEdit(value, oldValue, v, actionDescription))
     }
 
     private inner class Prompt : TextPrompt<T>(nameLabel.text, converter.toString(value.now)) {
