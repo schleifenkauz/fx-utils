@@ -2,6 +2,8 @@ package fxutils.prompt
 
 import fxutils.*
 import fxutils.PseudoClasses.SELECTED
+import fxutils.undo.UndoManager
+import fxutils.undo.VariableEdit
 import javafx.event.Event
 import javafx.geometry.Point2D
 import javafx.scene.Scene
@@ -17,6 +19,7 @@ import org.kordamp.ikonli.material2.Material2MZ
 import reaktive.value.ReactiveVariable
 import reaktive.value.binding.map
 import reaktive.value.fx.asObservableValue
+import reaktive.value.now
 import kotlin.reflect.KMutableProperty0
 
 abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
@@ -201,9 +204,16 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
     fun selectorButton(
         property: ReactiveVariable<E>, default: E = property.get(),
         displayText: (E) -> String = this::displayText,
+        undoManager: UndoManager? = null, actionDescription: String? = null,
     ): Button = button().apply {
-        textProperty().bind(property.map { txt -> displayText(txt).escapeUnderscores() } .asObservableValue())
-        showPopupOnClick(default, property::get) { value -> property.set(value) }
+        textProperty().bind(property.map { txt -> displayText(txt).escapeUnderscores() }.asObservableValue())
+        showPopupOnClick(default, property::get) { value ->
+            if (property.now != value) {
+                val oldValue = property.now
+                property.set(value)
+                undoManager?.record(VariableEdit(property, oldValue, value, actionDescription ?: title))
+            }
+        }
     }
 
     private fun Button.showPopupOnClick(default: E, get: () -> E, onSelect: (E) -> Unit) {
