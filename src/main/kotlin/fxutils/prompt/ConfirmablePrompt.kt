@@ -11,9 +11,13 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 
-abstract class ConfirmablePrompt<R : Any, N : Node>(final override val title: String) : Prompt<R?, N>() {
-    val cancelButton = button("Cancel") { commit(null) }
-    val confirmButton = button("Confirm") { commit(confirm()) }
+abstract class ConfirmablePrompt<R : Any, N : Node>(
+    final override val title: String,
+    cancelText: String = "Cancel",
+    confirmText: String = "Confirm"
+) : Prompt<R?, N>() {
+    val cancelButton = button(cancelText) { commit(null) }
+    val confirmButton = button(confirmText) { commit(confirm()) }
 
     override val windowType: SubWindow.Type
         get() = SubWindow.Type.Prompt

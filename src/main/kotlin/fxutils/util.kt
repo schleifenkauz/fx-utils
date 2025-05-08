@@ -28,8 +28,10 @@ import javafx.stage.PopupWindow
 import javafx.stage.Stage
 import javafx.stage.Window
 import org.controlsfx.control.ToggleSwitch
+import reaktive.Observer
 import reaktive.value.ReactiveBoolean
 import reaktive.value.ReactiveVariable
+import reaktive.value.forEach
 import reaktive.value.fx.asObservableValue
 import reaktive.value.fx.asProperty
 import java.util.*
@@ -55,7 +57,7 @@ fun skin(control: Control, node: Node): Skin<Control> = SimpleSkin(control, node
 
 
 private class SimpleSkin(
-    private val control: Control, private val node: Node
+    private val control: Control, private val node: Node,
 ) : Skin<Control> {
     override fun getSkinnable(): Control = control
 
@@ -287,6 +289,13 @@ fun Spinner<Int>.sync(variable: ReactiveVariable<Int>): Spinner<Int> {
     return this
 }
 
+fun Node.bindPseudoClassState(name: String, active: ReactiveBoolean): Observer {
+    val pseudoClass = PseudoClass.getPseudoClass(name)
+    return active.forEach { state ->
+        pseudoClassStateChanged(pseudoClass, state)
+    }
+}
+
 fun <T> runOnApplicationThread(action: () -> T): T {
     val future = CompletableFuture<T>()
     Platform.runLater {
@@ -380,12 +389,12 @@ fun Stage.showRightOf(anchorNode: Region) {
 
 fun undecoratedSubWindow(root: Parent) = SubWindow(root, "", SubWindow.Type.Undecorated)
 
-fun <W: Window> W.defaultSize(width: Double, height: Double): W {
+fun <W : Window> W.defaultSize(width: Double, height: Double): W {
     this.width = width
     this.height = height
     return this
 }
 
-fun <N: Region> N.pad(value: Double): N = also { padding = Insets(value) }
+fun <N : Region> N.pad(value: Double): N = also { padding = Insets(value) }
 
 fun Color.opacity(opacity: Double) = deriveColor(0.0, 0.0, 0.0, opacity)
