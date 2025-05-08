@@ -26,14 +26,17 @@ class Action<in C> private constructor(
 
     fun <D> map(name: String = this.name, f: (D) -> C?) =
         Action<D>(
-            name, category, { ctx -> f(ctx)?.let(description) ?: reactiveValue("<not applicable>") },
-            shortcuts, { ctx -> f(ctx)?.let(icon) ?: reactiveValue(null) },
-            { c -> f(c)?.let(applicability) ?: reactiveValue(false) }, ifNotApplicable,
-            { c -> f(c)?.let(toggleState) ?: reactiveVariable(false) }, { c, ev ->
+            name, category,
+            description = { ctx -> f(ctx)?.let(description) ?: reactiveValue("<not applicable>") },
+            shortcuts,
+            icon = { ctx -> f(ctx)?.let(icon) ?: reactiveValue(null) },
+            applicability = { c -> f(c)?.let(applicability) ?: reactiveValue(false) }, ifNotApplicable,
+            toggleState = { c -> f(c)?.let(toggleState) ?: reactiveVariable(false) }, { c, ev ->
                 val target = f(c)
                 if (target != null) execute(target, ev)
                 else System.err.println("Action $name is not applicable on $c")
-            }
+            },
+            undoManager = { ctx -> f(ctx)?.let(undoManager) }
         )
 
     enum class Category {
