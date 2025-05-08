@@ -6,6 +6,9 @@
 
 package fxutils
 
+import fxutils.undo.ToggleEdit
+import fxutils.undo.UndoManager
+import fxutils.undo.VariableEdit
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.value.ObservableValue
@@ -34,6 +37,7 @@ import reaktive.value.ReactiveVariable
 import reaktive.value.forEach
 import reaktive.value.fx.asObservableValue
 import reaktive.value.fx.asProperty
+import reaktive.value.now
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
@@ -284,8 +288,32 @@ fun CheckBox.sync(variable: ReactiveVariable<Boolean>): CheckBox {
     return this
 }
 
-fun Spinner<Int>.sync(variable: ReactiveVariable<Int>): Spinner<Int> {
+fun CheckBox.sync(variable: ReactiveVariable<Boolean>, description: String, undo: UndoManager): CheckBox {
+    isSelected = variable.now
+    selectedProperty().addListener { _, _, selected ->
+        if (variable.now != selected) {
+            variable.set(selected)
+            undo.record(ToggleEdit(description, variable))
+        }
+    }
+    userData = variable.observe { _, _, selected -> isSelected = selected }
+    return this
+}
+
+fun <T> Spinner<T>.sync(variable: ReactiveVariable<T>): Spinner<T> {
     valueFactory.valueProperty().bindBidirectional(variable.asProperty())
+    return this
+}
+
+fun <T> Spinner<T>.sync(variable: ReactiveVariable<T>, description: String, undo: UndoManager): Spinner<T> {
+    valueProperty().addListener { _, _, value ->
+        if (variable.now != value) {
+            val oldValue = variable.now
+            variable.set(value)
+            undo.record(VariableEdit(variable, oldValue, value, "Update $description"))
+        }
+    }
+    userData = variable.observe { _, _, v -> valueFactory.value = v }
     return this
 }
 
