@@ -34,9 +34,17 @@ dependencies {
     implementation 'org.kordamp.ikonli:ikonli-codicons-pack:12.3.1'
     implementation 'org.kordamp.ikonli:ikonli-evaicons-pack:12.3.1'
     implementation 'org.kordamp.ikonli:ikonli-material2-pack:12.3.1'
-    compileOnly 'de.schleifenkauz:reaktive:1.0-SNAPSHOT'
+
+    implementation 'de.schleifenkauz:reaktive:1.0-SNAPSHOT'
+    implementation "de.schleifenkauz:bundles:1.0-SNAPSHOT"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    api("org.jetbrains.spek:spek-api:1.1.5") {
+        exclude group: "org.jetbrains.kotlin"
+    }
+    api("com.natpryce:hamkrest:1.5.0.0") {
+        exclude group: "org.jetbrains.kotlin"
+    }
 }
 
 test {
