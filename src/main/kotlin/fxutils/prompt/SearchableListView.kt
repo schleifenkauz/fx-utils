@@ -2,6 +2,7 @@ package fxutils.prompt
 
 import fxutils.*
 import fxutils.PseudoClasses.SELECTED
+import fxutils.undo.PropertyEdit
 import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
 import javafx.event.Event
@@ -193,18 +194,23 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
 
     fun selectorButton(
         property: KMutableProperty0<E>, default: E = property.get(),
+        undoManager: UndoManager? = null, actionDescription: String? = null,
         displayText: (E) -> String = this::displayText,
     ): Button = button(displayText(property.get()).escapeUnderscores()).apply {
         showPopupOnClick(default, property::get) { value ->
-            property.set(value)
-            text = displayText(value).escapeUnderscores()
+            if (property.get() != value) {
+                val oldValue = property.get()
+                property.set(value)
+                undoManager?.record(PropertyEdit(property, oldValue, value, actionDescription ?: title))
+                text = displayText(value).escapeUnderscores()
+            }
         }
     }
 
     fun selectorButton(
         property: ReactiveVariable<E>, default: E = property.get(),
-        displayText: (E) -> String = this::displayText,
         undoManager: UndoManager? = null, actionDescription: String? = null,
+        displayText: (E) -> String = this::displayText,
     ): Button = button().apply {
         textProperty().bind(property.map { txt -> displayText(txt).escapeUnderscores() }.asObservableValue())
         showPopupOnClick(default, property::get) { value ->
