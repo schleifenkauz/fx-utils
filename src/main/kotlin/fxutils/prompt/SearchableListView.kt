@@ -9,10 +9,12 @@ import javafx.event.Event
 import javafx.geometry.Point2D
 import javafx.scene.Scene
 import javafx.scene.control.Button
+import javafx.scene.control.ScrollPane
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
+import javafx.stage.Screen
 import javafx.stage.Window
 import org.controlsfx.control.textfield.CustomTextField
 import org.kordamp.ikonli.javafx.FontIcon
@@ -26,6 +28,7 @@ import kotlin.reflect.KMutableProperty0
 abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
     private val searchText = CustomTextField().styleClass("sleek-text-field", "search-field")
     private val layout = VBox().styleClass("options-box")
+    private val scrollPane = ScrollPane(layout)
 
     private val optionBoxes = mutableMapOf<E, Region>()
     private var filteredOptions: List<E> = emptyList()
@@ -41,11 +44,13 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
 
     protected abstract fun options(): List<E>
 
+    fun withMaxHeight(height: Double) = also { scrollPane.maxHeight = height }
+
     init {
         styleClass("searchable-list")
         setupSearchField()
-        layout.setMaxSize(300.0, 500.0)
-        children.addAll(searchText, layout)
+        scrollPane.maxHeight = 400.0
+        children.addAll(searchText, scrollPane)
         registerShortcuts()
     }
 
@@ -160,7 +165,6 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         anchor: Point2D? = null, owner: Window? = null,
         initialOption: E? = null,
     ): E? {
-        prepareOptionBoxes()
         refilterOptions()
         if (initialOption in filteredOptions) select(initialOption)
         if (_window == null) {
@@ -171,6 +175,8 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
             window.x = anchor.x
             window.y = anchor.y
         } else window.centerOnScreen()
+        val screen = Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).first()
+        window.maxHeight = screen.visualBounds.maxY - window.y
         window.showAndWait()
         return result
     }
