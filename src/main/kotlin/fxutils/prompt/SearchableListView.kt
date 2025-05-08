@@ -51,6 +51,7 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         setupSearchField()
         scrollPane.maxHeight = 400.0
         children.addAll(searchText, scrollPane)
+        layout.minWidthProperty().bind(scrollPane.viewportBoundsProperty().map { it.width })
         registerShortcuts()
     }
 
