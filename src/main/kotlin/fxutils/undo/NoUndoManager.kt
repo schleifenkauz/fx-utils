@@ -24,8 +24,6 @@ object NoUndoManager : UndoManager {
 
     override fun redo() {}
 
-    override fun reset() {}
-
     override fun savedChanges() {}
 
     override fun record(edit: Edit) {}

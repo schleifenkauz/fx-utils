@@ -43,8 +43,6 @@ interface UndoManager {
      */
     fun redo()
 
-    fun reset()
-
     fun savedChanges()
 
     /**
@@ -89,9 +87,6 @@ interface UndoManager {
          */
         fun newInstance(): UndoManager = UndoManagerImpl(parent = null)
 
-        /**
-         * Return a synchronized undo manager which delegates to the given [undoManager]
-         */
-        fun concurrent(undoManager: UndoManager = newInstance()): UndoManager = ConcurrentUndoManager(undoManager)
+        fun none(): UndoManager = NoUndoManager
     }
 }
