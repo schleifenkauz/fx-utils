@@ -293,7 +293,7 @@ fun CheckBox.sync(variable: ReactiveVariable<Boolean>, description: String, undo
     selectedProperty().addListener { _, _, selected ->
         if (variable.now != selected) {
             variable.set(selected)
-            undo.record(ToggleEdit(description, variable))
+            undo.record(ToggleEdit("Toggle $description", variable))
         }
     }
     userData = variable.observe { _, _, selected -> isSelected = selected }

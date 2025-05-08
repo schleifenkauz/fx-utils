@@ -3,12 +3,9 @@ package fxutils.undo
 import reaktive.value.Variable
 
 class ToggleEdit(
-    private val variableDescription: String,
+    override val actionDescription: String,
     private val variable: Variable<Boolean>,
 ) : AbstractEdit() {
-    override val actionDescription: String
-        get() = "Toggle $variableDescription"
-
     override fun doRedo() {
         variable.set(!variable.get())
     }

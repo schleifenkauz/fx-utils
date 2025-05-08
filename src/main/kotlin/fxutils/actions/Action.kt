@@ -2,6 +2,9 @@ package fxutils.actions
 
 import fxutils.Shortcut
 import fxutils.shortcut
+import fxutils.undo.ToggleEdit
+import fxutils.undo.UndoManager
+import fxutils.undo.compoundEdit
 import javafx.event.Event
 import org.kordamp.ikonli.Ikon
 import reaktive.value.*
@@ -17,6 +20,7 @@ class Action<in C> private constructor(
     val ifNotApplicable: IfNotApplicable,
     val toggleState: (C) -> ReactiveValue<Boolean>?,
     val execute: (C, Event?) -> Unit,
+    val undoManager: (C) -> UndoManager? = { null },
 ) {
     fun withContext(context: C): ContextualizedAction = Contextualized(this, context)
 
@@ -46,6 +50,7 @@ class Action<in C> private constructor(
         private var ifNotApplicable: IfNotApplicable = IfNotApplicable.Hide,
         private var toggleState: (C) -> ReactiveValue<Boolean>? = { null },
         private var execute: (C, ev: Event?) -> Unit = { _, _ -> },
+        private var undoManager: (C) -> UndoManager? = { null },
     ) {
         fun description(desc: String) {
             description = { _ -> reactiveValue(desc) }
@@ -82,12 +87,12 @@ class Action<in C> private constructor(
         }
 
         inline fun <reified T : C> executesOn(crossinline action: (obj: T, ev: Event?) -> Unit) {
-            applicableWhen { obj -> reactiveValue(obj is T) }
+            enableWhen { obj -> reactiveValue(obj is T) }
             executes { obj, ev -> action(obj as T, ev) }
         }
 
         inline fun <reified T : C> executesOn(crossinline action: (obj: T) -> Unit) {
-            applicableWhen { obj -> reactiveValue(obj is T) }
+            enableWhen { obj -> reactiveValue(obj is T) }
             executes { obj -> action(obj as T) }
         }
 
@@ -123,16 +128,22 @@ class Action<in C> private constructor(
             }
         }
 
-        fun applicableWhen(predicate: (C) -> ReactiveBoolean) {
+        fun enableWhen(predicate: (C) -> ReactiveBoolean) {
             applicability = predicate
+            ifNotApplicable = IfNotApplicable.Disable
         }
 
         fun applicableIf(predicate: (C) -> Boolean) {
             applicability = { ctx -> reactiveValue(predicate(ctx)) }
+            ifNotApplicable = IfNotApplicable.Hide
         }
 
         fun ifNotApplicable(consequence: IfNotApplicable) {
             ifNotApplicable = consequence
+        }
+
+        fun undoable(manager: (C) -> UndoManager?) {
+            undoManager = manager
         }
 
         fun <D> buildFrom(action: Action<D>, f: (C) -> D) {
@@ -140,16 +151,18 @@ class Action<in C> private constructor(
             category = action.category
             icon { c -> action.icon(f(c)) }
             shortcuts.addAll(action.shortcuts)
-            applicableWhen { c -> action.applicability(f(c)) }
+            enableWhen { c -> action.applicability(f(c)) }
             toggleState = { c -> action.toggleState(f(c)) }
             executes { c, ev -> action.execute(f(c), ev) }
             ifNotApplicable = action.ifNotApplicable
+            undoManager = { c -> action.undoManager(f(c)) }
         }
 
         fun build(): Action<C> = Action(
             name, category, description,
             shortcuts, icon,
-            applicability, ifNotApplicable, toggleState, execute
+            applicability, ifNotApplicable, toggleState, execute,
+            undoManager
         )
     }
 
@@ -206,7 +219,22 @@ class Action<in C> private constructor(
         override val toggleState: ReactiveBoolean? = wrapped.toggleState(context)
 
         override fun execute(ev: Event?) {
-            wrapped.execute.invoke(context, ev)
+            val undoManager = wrapped.undoManager(context)
+            if (undoManager != null) {
+                if (toggleState !is ReactiveVariable) {
+                    undoManager.compoundEdit(description.now) {
+                        wrapped.execute.invoke(context, ev)
+                    }
+                } else {
+                    val toggleStateBefore = toggleState.now
+                    wrapped.execute.invoke(context, ev)
+                    if (toggleState.now != toggleStateBefore) {
+                        undoManager.record(ToggleEdit(description.now, toggleState))
+                    }
+                }
+            } else {
+                wrapped.execute.invoke(context, ev)
+            }
         }
     }
 
