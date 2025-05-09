@@ -30,6 +30,12 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
     private val layout = VBox().styleClass("options-box")
     private val scrollPane = ScrollPane(layout)
 
+    protected var anchor: Point2D? = null
+        private set
+
+    protected var ownerWindow: Window? = null
+        private set
+
     private val optionBoxes = mutableMapOf<E, Region>()
     private var filteredOptions: List<E> = emptyList()
     var selectedOption: E? = null
@@ -166,6 +172,8 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         anchor: Point2D? = null, owner: Window? = null,
         initialOption: E? = null,
     ): E? {
+        this.ownerWindow = owner
+        this.anchor = anchor
         refilterOptions()
         if (initialOption in filteredOptions) select(initialOption)
         if (_window == null) {
@@ -182,9 +190,12 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         return result
     }
 
-    fun showPopup(anchorNode: Region, initialOption: E? = null): E? {
-        val anchor = anchorNode.localToScreen(0.0, anchorNode.height)
-        return showPopup(anchor, anchorNode.scene.window, initialOption)
+    fun showPopup(anchorNode: Region, initialOption: E? = null): E? =
+        showPopup(anchorNode.scene.window, anchorNode, initialOption)
+
+    fun showPopup(parent: Window, anchorNode: Region?, initialOption: E? = null): E? {
+        val anchor = anchorNode?.localToScreen(0.0, anchorNode.height)
+        return showPopup(anchor, parent, initialOption)
     }
 
     fun showPopup(ev: Event?, initialOption: E? = null): E? {
