@@ -15,7 +15,6 @@ import reaktive.value.binding.notEqualTo
 import reaktive.value.forEach
 import reaktive.value.fx.asObservableValue
 import reaktive.value.now
-import reaktive.value.reactiveValue
 
 fun <C> collectActions(body: Action.Collector<C>.() -> Unit): Action.Collector<C> = Action.Collector<C>().apply(body)
 
@@ -49,7 +48,8 @@ fun <C, T : SelectorBar.Option<C, T>> Action.Builder<SelectorBar<T, C>>.selects(
     selects(value) { bar -> bar.selectedOption }
 }
 
-val Event?.isTargetTextInput get() = this is KeyEvent && (target is TextInputControl || target is Spinner<*>)
+val Event?.isTargetTextInput
+    get() = this is KeyEvent && (target is TextInputControl || target is Spinner<*> || target is TextArea)
 
 const val DEFAULT_RADIUS: Double = 16.0
 
