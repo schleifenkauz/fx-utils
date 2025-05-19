@@ -184,7 +184,7 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
             window.x = anchor.x
             window.y = anchor.y
         } else window.centerOnScreen()
-        val screen = Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).first()
+        val screen = Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
         window.maxHeight = screen.visualBounds.maxY - window.y
         window.showAndWait()
         return result

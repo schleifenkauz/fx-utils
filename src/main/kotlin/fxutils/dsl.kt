@@ -161,3 +161,6 @@ inline fun <N : Node> Pane.add(node: N, block: N.() -> Unit = {}) {
 fun Labeled.center() {
     alignment = Pos.CENTER
 }
+
+fun <N : Region> N.widthAtLeast(width: Double): N = apply { minWidth = width }
+fun <N : Region> N.heightAtLeast(width: Double): N = apply { minHeight = width }
