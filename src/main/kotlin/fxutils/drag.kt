@@ -14,7 +14,7 @@ fun Node.setupDragging(
     defaultCursor: Cursor = Cursor.OPEN_HAND, dragCursor: Cursor = Cursor.CLOSED_HAND,
     onPressed: (ev: MouseEvent) -> Unit = {},
     onReleased: (ev: MouseEvent) -> Unit = {},
-    relocateBy: (ev: MouseEvent, start: Point2D, old: Bounds, dx: Double, dy: Double) -> Unit
+    relocateBy: (ev: MouseEvent, start: Point2D, old: Bounds, dx: Double, dy: Double) -> Unit,
 ) {
     var dragStart: Point2D? = null
     var localStart: Point2D? = null
@@ -56,11 +56,11 @@ fun Node.setupDragging(
 }
 
 fun Region.setupDraggingAndResizing(
-    canUserChangeWidth: Boolean, canUserChangeHeight: Boolean,
+    canUserChangeWidth: Boolean, canUserChangeHeight: Boolean, threshold: Double,
     drag: (x: Double, y: Double) -> Unit,
     resize: (Bounds, Double, Double, Cursor, MouseEvent) -> Unit,
     startDrag: (MouseEvent, Cursor) -> Boolean = { _, _ -> true },
-    finishDrag: (MouseEvent, Cursor) -> Unit = { _, _ -> }
+    finishDrag: (MouseEvent, Cursor) -> Unit = { _, _ -> },
 ) {
     cursor = Cursor.OPEN_HAND
     var dragStart: Point2D? = null
@@ -90,9 +90,7 @@ fun Region.setupDraggingAndResizing(
             }
 
             MouseEvent.MOUSE_MOVED -> {
-                cursor = getCursor(
-                    ev, canUserChangeWidth, canUserChangeHeight, ev.isPrimaryButtonDown
-                )
+                cursor = getCursor(ev, canUserChangeWidth, canUserChangeHeight, ev.isPrimaryButtonDown, threshold)
                 return@addEventHandler
             }
 
@@ -111,25 +109,24 @@ fun Region.setupDraggingAndResizing(
 }
 
 private fun Region.getCursor(
-    ev: MouseEvent, canUserChangeWidth: Boolean, canUserChangeHeight: Boolean, closeHand: Boolean
+    ev: MouseEvent, canUserChangeWidth: Boolean, canUserChangeHeight: Boolean, closeHand: Boolean,
+    threshold: Double,
 ): Cursor {
     val x = ev.x
     val y = ev.y
-    val tx = 5
-    val ty = 5
     val dx = (x - prefWidth).absoluteValue
     val dy = (y - prefHeight).absoluteValue
     return when {
         ev.modifiers.isEmpty() -> if (closeHand) Cursor.CLOSED_HAND else Cursor.OPEN_HAND
         !ev.isControlDown && !ev.isAltDown -> if (closeHand) cursor else Cursor.DEFAULT
-        x.absoluteValue < tx && y.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.NW_RESIZE
-        x.absoluteValue < tx && dy.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.SW_RESIZE
-        dx < tx && y.absoluteValue < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.NE_RESIZE
-        dx < tx && dy < ty && canUserChangeHeight && canUserChangeWidth -> Cursor.SE_RESIZE
-        x.absoluteValue < tx && canUserChangeWidth -> Cursor.W_RESIZE
-        dx < tx && canUserChangeWidth -> Cursor.E_RESIZE
-        y.absoluteValue < ty && canUserChangeHeight -> Cursor.N_RESIZE
-        dy < ty && canUserChangeHeight -> Cursor.S_RESIZE
+        x.absoluteValue < threshold && y.absoluteValue < threshold && canUserChangeHeight && canUserChangeWidth -> Cursor.NW_RESIZE
+        x.absoluteValue < threshold && dy.absoluteValue < threshold && canUserChangeHeight && canUserChangeWidth -> Cursor.SW_RESIZE
+        dx < threshold && y.absoluteValue < threshold && canUserChangeHeight && canUserChangeWidth -> Cursor.NE_RESIZE
+        dx < threshold && dy < threshold && canUserChangeHeight && canUserChangeWidth -> Cursor.SE_RESIZE
+        x.absoluteValue < threshold && canUserChangeWidth -> Cursor.W_RESIZE
+        dx < threshold && canUserChangeWidth -> Cursor.E_RESIZE
+        y.absoluteValue < threshold && canUserChangeHeight -> Cursor.N_RESIZE
+        dy < threshold && canUserChangeHeight -> Cursor.S_RESIZE
         closeHand -> Cursor.CLOSED_HAND
         else -> Cursor.OPEN_HAND
     }
@@ -142,7 +139,8 @@ fun Node.setupWindowDragging(window: () -> Window) {
     setupDragging(
         onPressed = {
             val w = window()
-            startCords = Point2D(w.x, w.y) },
+            startCords = Point2D(w.x, w.y)
+        },
         relocateBy = { _, _, _, dx, dy ->
             val w = window()
             w.x = startCords.x + dx
