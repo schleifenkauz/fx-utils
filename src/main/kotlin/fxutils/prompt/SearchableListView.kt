@@ -7,11 +7,13 @@ import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
 import javafx.event.Event
 import javafx.geometry.Point2D
+import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.Button
 import javafx.scene.control.ScrollPane
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.stage.Screen
@@ -198,10 +200,14 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         return showPopup(anchor, parent, initialOption)
     }
 
-    fun showPopup(ev: Event?, initialOption: E? = null): E? {
+    fun showPopup(ev: Event?, initialOption: E? = null, preferMouseCoords: Boolean = false): E? {
         if (ev == null) return showPopup()
+        val ownerWindow = (ev.source as? Node)?.scene?.window ?: (ev.target as? Node)?.scene?.window
         val anchorNode = ev.source as? Region
-        return if (anchorNode != null) showPopup(anchorNode, initialOption)
+        return if (preferMouseCoords && ev is MouseEvent) {
+            val anchor = Point2D(ev.screenX, ev.screenY)
+            showPopup(anchor, ownerWindow, initialOption)
+        } else if (anchorNode != null) showPopup(anchorNode, initialOption)
         else when (val target = ev.target) {
             is Scene -> showPopup(owner = target.window)
             is Region -> showPopup(target, initialOption = initialOption)

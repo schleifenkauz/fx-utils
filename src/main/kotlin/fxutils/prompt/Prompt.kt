@@ -8,6 +8,7 @@ import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Label
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.stage.Window
@@ -69,10 +70,12 @@ abstract class Prompt<R, N : Node> {
         return showDialog(layout, anchorNode.scene.window, coords)
     }
 
-    fun showDialog(ev: Event?, offset: Point2D? = null): R {
+    fun showDialog(ev: Event?, offset: Point2D? = null, preferMouseCoords: Boolean = false): R {
         if (ev == null) return showDialog()
+        val ownerWindow = (ev.source as? Node)?.scene?.window ?: (ev.target as? Node)?.scene?.window
         val anchorNode = ev.source as? Region
-        return if (anchorNode != null) showDialog(anchorNode, offset ?: Point2D(0.0, anchorNode.height + 5.0))
+        return if (preferMouseCoords && ev is MouseEvent) showDialog(ownerWindow, Point2D(ev.screenX, ev.screenY))
+        else if (anchorNode != null) showDialog(anchorNode, offset ?: Point2D(0.0, anchorNode.height + 5.0))
         else when (val target = ev.target) {
             is Scene -> showDialog(target.window)
             is Region -> showDialog(target, offset ?: Point2D(0.0, target.height + 5.0))
