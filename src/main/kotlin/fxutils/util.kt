@@ -14,10 +14,8 @@ import javafx.beans.binding.Bindings
 import javafx.beans.value.ObservableValue
 import javafx.css.PseudoClass
 import javafx.event.ActionEvent
-import javafx.geometry.Bounds
-import javafx.geometry.Insets
-import javafx.geometry.Point2D
-import javafx.geometry.Pos
+import javafx.event.Event
+import javafx.geometry.*
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.*
@@ -26,10 +24,7 @@ import javafx.scene.input.KeyCode.ENTER
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.robot.Robot
-import javafx.stage.Popup
-import javafx.stage.PopupWindow
-import javafx.stage.Stage
-import javafx.stage.Window
+import javafx.stage.*
 import org.controlsfx.control.ToggleSwitch
 import reaktive.Observer
 import reaktive.value.ReactiveBoolean
@@ -426,3 +421,14 @@ fun <W : Window> W.defaultSize(width: Double, height: Double): W {
 fun <N : Region> N.pad(value: Double): N = also { padding = Insets(value) }
 
 fun Color.opacity(opacity: Double) = deriveColor(0.0, 0.0, 0.0, opacity)
+
+fun Rectangle2D.middlePoint() = Point2D((minX + maxX) / 2, (minY + maxY) / 2)
+
+fun Event?.popupAnchor(): Point2D = when {
+    this is MouseEvent -> Point2D(screenX, screenY)
+    this != null && source is Region -> {
+        val source = source as Region
+        source.localToScreen(0.0, source.height)
+    }
+    else -> Screen.getPrimary().visualBounds.middlePoint()
+}

@@ -31,4 +31,15 @@ class VariableEdit<T>(
     override fun mergeWith(other: Edit): Edit? =
         if (other !is VariableEdit<*> || other.variable !== this.variable) null
         else VariableEdit(variable, this.oldValue, other.newValue as T, other.actionDescription)
+
+    companion object {
+        fun <T> updateVariable(
+            variable: Variable<T>, newValue: T,
+            manager: UndoManager, description: String = "Update",
+        ) {
+            if (variable.get() == newValue) return
+            manager.record(VariableEdit(variable, variable.get(), newValue, description))
+            variable.set(newValue)
+        }
+    }
 }
