@@ -1,19 +1,18 @@
 package fxutils.prompt
 
-import fxutils.registerShortcuts
-import javafx.scene.layout.HBox
 import fxutils.button
-import fxutils.prompt.Prompt
+import fxutils.registerShortcuts
 import fxutils.styleClass
+import javafx.scene.layout.HBox
 
 class YesNoPrompt(
     private val question: String,
     private val cancellable: Boolean = false,
     private val default: Boolean? = if (cancellable) null else false
 ) : Prompt<Boolean?, HBox>() {
-    private val btnCancel = button("Cancel") { commit(null) } styleClass "sleek-button"
-    private val btnNo = button("No") { commit(false) } styleClass "sleek-button"
-    private val btnYes = button("Yes") { commit(true) } styleClass "sleek-button"
+    private val btnCancel = button("Cancel") { commit(null) }
+    private val btnNo = button("No") { commit(false) }
+    private val btnYes = button("Yes") { commit(true) }
     override val content = HBox(btnNo, btnYes) styleClass "buttons-bar"
     override val title: String
         get() = question

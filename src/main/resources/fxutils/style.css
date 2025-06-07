@@ -1,17 +1,27 @@
+Button.sleek-button, Button.selector-button {
+    -fx-background-color: black !important;
+    -fx-border-color: rgba(128, 128, 128, 0.3) !important;
+}
+
 Button.sleek-button {
     -fx-padding: 3px !important;
-    -fx-background-color: black !important;
     -fx-border-width: 2px;
-    -fx-border-color: rgba(128, 128, 128, 0.3) !important;
     -fx-background-radius: 5px !important;
     -fx-border-radius: 5px !important;
 }
 
-Button.sleek-button:hover {
+Button.selector-button {
+    -fx-padding: 2px !important;
+    -fx-border-width: 1px;
+    -fx-background-radius: 2px !important;
+    -fx-border-radius: 2px !important;
+}
+
+Button.sleek-button:hover, Button.selector-button:hover {
     -fx-background-color: #351919 !important;
 }
 
-Button.sleek-button:focused {
+Button.sleek-button:focused, Button.selector-button:focused {
     -fx-border-color: #501717 !important;
 }
 
@@ -21,8 +31,7 @@ Button.sleek-button:focused {
 
 .option-cell {
     -fx-background-color: transparent;
-    -fx-padding: 3px;
-    -fx-background-radius: 3px;
+    -fx-padding: 2px;
 }
 
 .option-cell:selected {
@@ -31,7 +40,7 @@ Button.sleek-button:focused {
 
 .option-label {
     -fx-text-fill: white;
-    -fx-font-size: 12px;
+    -fx-font-size: 11px;
 }
 
 .searchable-list {
@@ -48,8 +57,10 @@ FontIcon {
     -fx-background-color: transparent;
     -fx-focus-traversable: false;
     -fx-border-color: transparent;
-    -fx-border-width: 2px;
+    -fx-border-width: 1px;
     -fx-padding: 0px !important;
+    -fx-vbar-policy: never;
+    -fx-hbar-policy: never;
 }
 
 .icon-button:selected {
@@ -57,34 +68,59 @@ FontIcon {
     -fx-background-color: #351919 !important;
 }
 
-.large-icon-button FontIcon {
+.icon-button:disabled FontIcon {
+    -fx-icon-color: grey;
+}
+
+/*
+* LARGE
+*/
+
+.icon-button.large-icon-button FontIcon {
     -fx-icon-size: 26px;
 }
 
-.large-icon-button {
+.icon-button.large-icon-button {
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
 }
 
-.large-icon-button:hover {
+.icon-button.large-icon-button:hover {
     -fx-background-color: #351919;
 }
 
-.medium-icon-button FontIcon {
+/*
+* MEDIUM
+*/
+
+.icon-button.medium-icon-button FontIcon {
     -fx-icon-size: 18px;
 }
 
-.medium-icon-button {
-    -fx-background-radius: 3px;
-    -fx-border-radius: 3px;
+.icon-button.medium-icon-button {
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
 }
 
-.medium-icon-button:hover {
+.icon-button.medium-icon-button:hover {
     -fx-background-color: #351919;
+}
+
+/*
+* SMALL
+*/
+
+.icon-button.small-icon-button FontIcon {
+    -fx-icon-size: 14px;
+}
+
+.icon-button.small-icon-button:hover FontIcon {
+    -fx-icon-color: #351919;
 }
 
 .action-bar {
     -fx-alignment: center-left;
+    -fx-spacing: 2px;
 }
 
 /*
@@ -93,4 +129,20 @@ FontIcon {
 
 .slider-bar > ProgressBar > .bar {
     -fx-background-insets: 0;
+}
+
+/*
+ * DetailPane
+ */
+
+.detail-item {
+    -fx-border-width: 1;
+    -fx-border-radius: 3px;
+    -fx-border-color: black;
+    -fx-padding: 2px;
+    -fx-alignment: center-left;
+}
+
+.detail-item:hover {
+    -fx-background-color: rgba(100, 0, 0, 0.1);
 }

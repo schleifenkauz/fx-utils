@@ -51,9 +51,7 @@ fun <C, T : SelectorBar.Option<C, T>> Action.Builder<SelectorBar<T, C>>.selects(
 val Event?.isTargetTextInput
     get() = this is KeyEvent && (target is TextInputControl || target is Spinner<*> || target is TextArea)
 
-const val DEFAULT_RADIUS: Double = 16.0
-
-fun ContextualizedAction.makeButton(vararg style: String): Button {
+fun ContextualizedAction.makeButton(style: String): Button {
     val button = Button()
     val iconObserver = this.icon.forEach { icon ->
         Platform.runLater {
@@ -86,24 +84,30 @@ fun ContextualizedAction.makeButton(vararg style: String): Button {
             }
         }
     }
-    button.setMinSize(DEFAULT_RADIUS * 2, DEFAULT_RADIUS * 2)
-    button.setMaxSize(DEFAULT_RADIUS * 2, DEFAULT_RADIUS * 2)
-    button.neverHGrow()
-    button.styleClass.addAll(style.toList() + "icon-button")
+    val size = buttonSize(style)
+    button.setMinSize(size, size)
+    button.styleClass("icon-button", style)
     button.setOnMouseClicked { ev -> this.execute(ev) }
     return button
 }
 
-private fun ButtonBase.makeIconButton(ikon: Ikon, description: String) {
-    styleClass("icon-button")
+private fun buttonSize(style: String) = when (style) {
+    "small-icon-button" -> 16.0
+    "medium-icon-button" -> 24.0
+    "large-icon-button" -> 32.0
+    else -> throw AssertionError("Unknown icon button style: $style")
+}
+
+private fun ButtonBase.makeIconButton(ikon: Ikon, description: String, style: String) {
+    styleClass("icon-button", style)
     graphic = FontIcon(ikon)
     tooltip = Tooltip(description)
     neverHGrow()
 }
 
-fun Ikon.button(action: String, execute: (MouseEvent) -> Unit = {}): Button {
+fun Ikon.button(action: String, style: String, execute: (MouseEvent) -> Unit = {}): Button {
     val button = Button()
-    button.makeIconButton(this, action)
+    button.makeIconButton(this, action, style)
     button.setOnMouseClicked { ev -> execute(ev) }
     return button
 }

@@ -182,8 +182,8 @@ fun <N : Node> N.styleClass(vararg classes: String) = also { it.styleClass.addAl
 
 infix fun <N : Node> N.styleClass(name: String) = also { it.styleClass.add(name) }
 
-fun button(text: String = "", onAction: (ev: ActionEvent) -> Unit = {}) =
-    Button(text.escapeUnderscores()).styleClass("sleek-button").also { btn -> btn.setOnAction(onAction) }
+fun button(text: String = "", style: String = "sleek-button", onAction: (ev: ActionEvent) -> Unit = {}) =
+    Button(text.escapeUnderscores()).styleClass(style).also { btn -> btn.setOnAction(onAction) }
 
 fun showPopup(owner: Node, node: Node) = popup(node).showBelow(owner)
 
@@ -430,5 +430,6 @@ fun Event?.popupAnchor(): Point2D = when {
         val source = source as Region
         source.localToScreen(0.0, source.height)
     }
+
     else -> Screen.getPrimary().visualBounds.middlePoint()
 }

@@ -12,16 +12,16 @@ import javafx.scene.layout.StackPane
 
 open class ActionBar private constructor(
     private val actions: MutableList<ContextualizedAction>,
-    vararg buttonStyle: String,
+    private val buttonStyle: String,
 ) : HBox() {
     private val indices = mutableMapOf<Button, Int>()
     private val buttons = mutableMapOf<Action<*>, Button>()
 
-    @Suppress("CanBePrimaryConstructorProperty") //cannot because it is vararg
-    private val buttonStyle = buttonStyle
+    constructor(
+        actions: Collection<ContextualizedAction>, buttonStyle: String,
+    ) : this(actions.toMutableList(), buttonStyle)
 
-    constructor(actions: List<ContextualizedAction>, buttonStyle: String) : this(actions.toMutableList(), buttonStyle)
-    constructor(vararg buttonStyle: String) : this(mutableListOf(), *buttonStyle)
+    constructor(buttonStyle: String) : this(mutableListOf(), buttonStyle)
 
     init {
         styleClass("action-bar")
@@ -45,7 +45,7 @@ open class ActionBar private constructor(
     }
 
     private fun addAction(action: ContextualizedAction, idx: Int) {
-        val button = action.makeButton(*buttonStyle)
+        val button = action.makeButton(buttonStyle)
         indices[button] = idx
         buttons[action.wrapped] = button
         if (button.isVisible) children.add(button)

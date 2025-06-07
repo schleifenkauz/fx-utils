@@ -33,7 +33,7 @@ class SubWindow(
                         hide()
                     }
                 }
-                initModality(Modality.WINDOW_MODAL)
+                initModality(Modality.NONE)
                 initStyle(StageStyle.TRANSPARENT)
             }
 
@@ -65,6 +65,7 @@ class SubWindow(
     fun showOrBringToFront() {
         if (!isShowing) show()
         else toFront()
+        requestFocus()
     }
 
     enum class Type {

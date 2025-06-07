@@ -7,8 +7,8 @@ class SelectorBar<T : SelectorBar.Option<C, T>, C>(
     val context: C,
     options: List<T>,
     initial: T,
-    vararg buttonStyle: String
-) : ActionBar(*buttonStyle) {
+    buttonStyle: String
+) : ActionBar(buttonStyle) {
     private val _selected = reactiveVariable(initial)
     val selectedOption get() = _selected
     val selected get() = _selected.now

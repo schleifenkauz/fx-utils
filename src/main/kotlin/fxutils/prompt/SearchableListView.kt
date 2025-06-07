@@ -220,7 +220,7 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         property: KMutableProperty0<E>, default: E = property.get(),
         undoManager: UndoManager? = null, actionDescription: String? = null,
         displayText: (E) -> String = this::displayText,
-    ): Button = button(displayText(property.get()).escapeUnderscores()).apply {
+    ): Button = button(displayText(property.get()), style = "selector-button").apply {
         showPopupOnClick(default, property::get) { value ->
             if (property.get() != value) {
                 val oldValue = property.get()
@@ -235,7 +235,7 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         property: ReactiveVariable<E>, default: E = property.get(),
         undoManager: UndoManager? = null, actionDescription: String? = null,
         displayText: (E) -> String = this::displayText,
-    ): Button = button().apply {
+    ): Button = button(style = "selector-button").apply {
         textProperty().bind(property.map { txt -> displayText(txt).escapeUnderscores() }.asObservableValue())
         showPopupOnClick(default, property::get) { value ->
             if (property.now != value) {
