@@ -1,5 +1,6 @@
 package fxutils
 
+import javafx.event.EventType
 import javafx.geometry.BoundingBox
 import javafx.geometry.Bounds
 import javafx.geometry.Point2D
@@ -12,6 +13,7 @@ import kotlin.math.absoluteValue
 
 fun Node.setupDragging(
     defaultCursor: Cursor = Cursor.OPEN_HAND, dragCursor: Cursor = Cursor.CLOSED_HAND,
+    startDragEvent: EventType<MouseEvent> = MouseEvent.DRAG_DETECTED,
     onPressed: (ev: MouseEvent) -> Unit = {},
     onReleased: (ev: MouseEvent) -> Unit = {},
     relocateBy: (ev: MouseEvent, start: Point2D, old: Bounds, dx: Double, dy: Double) -> Unit,
@@ -23,7 +25,7 @@ fun Node.setupDragging(
     addEventHandler(MouseEvent.ANY) { ev ->
         if (ev.modifiers.isNotEmpty()) return@addEventHandler
         when (ev.eventType) {
-            MouseEvent.MOUSE_PRESSED -> {
+            startDragEvent -> {
                 cursor = dragCursor
                 onPressed(ev)
             }
@@ -43,10 +45,12 @@ fun Node.setupDragging(
 
             MouseEvent.MOUSE_RELEASED -> {
                 cursor = defaultCursor
-                onReleased(ev)
-                dragStart = null
-                oldBounds = null
-                localStart = null
+                if (dragStart != null) {
+                    onReleased(ev)
+                    dragStart = null
+                    oldBounds = null
+                    localStart = null
+                }
             }
 
             else -> return@addEventHandler
@@ -67,12 +71,12 @@ fun Region.setupDraggingAndResizing(
     var oldBounds: Bounds? = null
     addEventHandler(MouseEvent.ANY) { ev ->
         when (ev.eventType) {
-            MouseEvent.MOUSE_PRESSED -> {
+            MouseEvent.DRAG_DETECTED -> {
                 if (dragStart == null && cursor != null) {
-                    oldBounds = BoundingBox(layoutX, layoutY, width, height)
-                    dragStart = Point2D(ev.screenX, ev.screenY)
-                    startDrag(ev, cursor)
-
+                    if (startDrag(ev, cursor)) {
+                        oldBounds = BoundingBox(layoutX, layoutY, width, height)
+                        dragStart = Point2D(ev.screenX, ev.screenY)
+                    }
                 }
             }
 

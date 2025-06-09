@@ -111,11 +111,11 @@ FontIcon {
 */
 
 .icon-button.small-icon-button FontIcon {
-    -fx-icon-size: 14px;
+    -fx-icon-size: 15px;
 }
 
 .icon-button.small-icon-button:hover FontIcon {
-    -fx-icon-color: #351919;
+    -fx-icon-color: #6c0000;
 }
 
 .action-bar {

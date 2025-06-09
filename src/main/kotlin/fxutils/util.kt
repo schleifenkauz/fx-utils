@@ -249,10 +249,8 @@ fun Node.setupDropArea(condition: (db: Dragboard) -> Boolean, onDrop: (ev: DragE
         }
     }
     addEventHandler(DragEvent.DRAG_EXITED) { ev ->
-        if (condition(ev.dragboard)) {
-            setPseudoClassState("drop-possible", false)
-            ev.consume()
-        }
+        setPseudoClassState("drop-possible", false)
+        ev.consume()
     }
     addEventHandler(DragEvent.DRAG_DROPPED) { ev ->
         if (condition(ev.dragboard)) {
@@ -432,4 +430,14 @@ fun Event?.popupAnchor(): Point2D = when {
     }
 
     else -> Screen.getPrimary().visualBounds.middlePoint()
+}
+
+fun Node.isActuallyVisible(): Boolean {
+    if (scene == null) return false
+    var current: Node? = this
+    while (current != null) {
+        if (!current.isVisible()) return false
+        current = current.getParent()
+    }
+    return true
 }
