@@ -12,19 +12,20 @@ import fxutils.undo.VariableEdit
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableList
 import javafx.css.PseudoClass
 import javafx.event.ActionEvent
-import javafx.event.Event
 import javafx.geometry.*
 import javafx.scene.Node
-import javafx.scene.Parent
 import javafx.scene.control.*
-import javafx.scene.input.*
 import javafx.scene.input.KeyCode.ENTER
+import javafx.scene.input.KeyCombination
+import javafx.scene.input.KeyEvent
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.robot.Robot
-import javafx.stage.*
+import javafx.stage.Window
 import org.controlsfx.control.ToggleSwitch
 import reaktive.Observer
 import reaktive.value.ReactiveBoolean
@@ -72,11 +73,6 @@ inline fun Node.registerShortcut(s: KeyCombination, crossinline action: () -> Un
             k.consume()
         }
     }
-}
-
-fun PopupWindow.showBelow(node: Node) {
-    val p = node.localToScreen(0.0, node.prefHeight(-1.0)) ?: return
-    show(node, p.x, p.y)
 }
 
 fun TextField.smartSetText(new: String) {
@@ -144,19 +140,6 @@ fun Dialog<*>.setDefaultButton(type: ButtonType) {
     }
 }
 
-inline fun <R, D : Dialog<R>> D.showDialog(config: D.() -> Unit = {}): R? {
-    config()
-    isResizable = true
-    setOnShown {
-        runFXWithTimeout(delay = 100) {
-            isResizable = false
-        }
-    }
-    return showAndWait().orElse(null)
-}
-
-fun <R> showDialog(config: Dialog<R>.() -> Unit): R? = Dialog<R>().showDialog(config)
-
 inline fun showConfirmationAlert(yesButton: ButtonType = ButtonType.YES, config: Alert.() -> Unit): Boolean =
     Alert(Alert.AlertType.CONFIRMATION).showDialog(config) == yesButton
 
@@ -185,29 +168,6 @@ infix fun <N : Node> N.styleClass(name: String) = also { it.styleClass.add(name)
 fun button(text: String = "", style: String = "sleek-button", onAction: (ev: ActionEvent) -> Unit = {}) =
     Button(text.escapeUnderscores()).styleClass(style).also { btn -> btn.setOnAction(onAction) }
 
-fun showPopup(owner: Node, node: Node) = popup(node).showBelow(owner)
-
-fun Popup.show(owner: Node) {
-    val coords = owner.localToScreen(0.0, 0.0)
-    show(owner, coords.x, coords.y)
-}
-
-fun Popup.showBelow(owner: Region) {
-    val coords = owner.localToScreen(0.0, owner.height)
-    show(owner, coords.x, coords.y)
-}
-
-fun Popup.showRightOf(owner: Region) {
-    val coords = owner.localToScreen(owner.width, 0.0)
-    show(owner, coords.x, coords.y)
-}
-
-inline fun popup(node: Node, block: Popup.() -> Unit = {}) = Popup().apply {
-    content.add(node)
-    isAutoHide = true
-    block()
-}
-
 fun <T, F> ObservableValue<out T>.map(f: (T) -> F): ObservableValue<F> =
     Bindings.createObjectBinding({ f(value) }, this)
 
@@ -234,42 +194,6 @@ fun <N : Node> N.centerChildren() = also {
 fun Region.centerHorizontally(parent: Region) {
     layoutXProperty().bind(parent.widthProperty().subtract(widthProperty()).divide(2))
 }
-
-fun Node.setupDropArea(condition: (db: Dragboard) -> Boolean, onDrop: (ev: DragEvent) -> Unit) {
-    addEventHandler(DragEvent.DRAG_OVER) { ev ->
-        if (condition(ev.dragboard)) {
-            ev.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
-            ev.consume()
-        }
-    }
-    addEventHandler(DragEvent.DRAG_ENTERED) { ev ->
-        if (condition(ev.dragboard)) {
-            setPseudoClassState("drop-possible", true)
-            ev.consume()
-        }
-    }
-    addEventHandler(DragEvent.DRAG_EXITED) { ev ->
-        setPseudoClassState("drop-possible", false)
-        ev.consume()
-    }
-    addEventHandler(DragEvent.DRAG_DROPPED) { ev ->
-        if (condition(ev.dragboard)) {
-            try {
-                onDrop(ev)
-            } catch (ex: Exception) {
-                System.err.println("Exception while dropping")
-                ex.printStackTrace()
-            }
-            ev.isDropCompleted = true
-            ev.consume()
-        }
-    }
-}
-
-fun Dragboard.hasFiles(extension: String) =
-    hasFiles() && files.all { f -> f.extension.equals(extension, ignoreCase = true) }
-
-fun Dragboard.hasFile(extension: String): Boolean = hasFiles(extension) && files.size == 1
 
 fun ToggleSwitch.sync(variable: ReactiveVariable<Boolean>): ToggleSwitch {
     selectedProperty().bindBidirectional(variable.asProperty())
@@ -340,16 +264,6 @@ fun Node.setPseudoClassState(name: String, value: Boolean) {
 
 fun background(color: Color) = Background(BackgroundFill(color, null, null))
 
-fun Window.resize(width: Double, height: Double) {
-    this.width = width
-    this.height = height
-}
-
-fun Window.relocate(x: Double, y: Double) {
-    this.x = x
-    this.y = y
-}
-
 fun <R : Region> R.setFixedWidth(width: Double) = also { r ->
     r.prefWidth = width
     r.minWidth = width
@@ -382,34 +296,6 @@ fun ScrollPane.letContentFillViewPort(): ScrollPane {
     return this
 }
 
-fun Stage.show(coords: Point2D) {
-    x = coords.x
-    y = coords.y
-    show()
-}
-
-fun Stage.showCentered(owner: Window) {
-    if (this.owner == null) initOwner(owner)
-    centerOnScreen()
-    show()
-}
-
-fun Stage.show(anchorNode: Node, offset: Point2D) {
-    if (this.owner == null) initOwner(anchorNode.scene.window)
-    val pos = anchorNode.localToScreen(offset)
-    show(pos)
-}
-
-fun Stage.showBelow(anchorNode: Region) {
-    show(anchorNode, Point2D(0.0, anchorNode.height))
-}
-
-fun Stage.showRightOf(anchorNode: Region) {
-    show(anchorNode, Point2D(anchorNode.width, 0.0))
-}
-
-fun undecoratedSubWindow(root: Parent) = SubWindow(root, "", SubWindow.Type.Undecorated)
-
 fun <W : Window> W.defaultSize(width: Double, height: Double): W {
     this.width = width
     this.height = height
@@ -422,16 +308,6 @@ fun Color.opacity(opacity: Double) = deriveColor(0.0, 0.0, 0.0, opacity)
 
 fun Rectangle2D.middlePoint() = Point2D((minX + maxX) / 2, (minY + maxY) / 2)
 
-fun Event?.popupAnchor(): Point2D = when {
-    this is MouseEvent -> Point2D(screenX, screenY)
-    this != null && source is Region -> {
-        val source = source as Region
-        source.localToScreen(0.0, source.height)
-    }
-
-    else -> Screen.getPrimary().visualBounds.middlePoint()
-}
-
 fun Node.isActuallyVisible(): Boolean {
     if (scene == null) return false
     var current: Node? = this
@@ -440,4 +316,9 @@ fun Node.isActuallyVisible(): Boolean {
         current = current.getParent()
     }
     return true
+}
+
+fun ObservableList<Node>.addAfter(node: Node, newChild: Node) {
+    val idx = indexOf(node)
+    add(idx + 1, newChild)
 }

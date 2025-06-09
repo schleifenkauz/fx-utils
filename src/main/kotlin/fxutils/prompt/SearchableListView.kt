@@ -16,6 +16,7 @@ import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
+import javafx.stage.Popup
 import javafx.stage.Screen
 import javafx.stage.Window
 import org.controlsfx.control.textfield.CustomTextField
@@ -180,7 +181,11 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         if (initialOption in filteredOptions) select(initialOption)
         if (_window == null) {
             _window = SubWindow(this, title, type = SubWindow.Type.Popup)
-            if (owner != null && window.owner == null) window.initOwner(owner)
+            if (owner != null && window.owner == null) {
+                if (owner !is Popup && !(owner is SubWindow && owner.type == SubWindow.Type.Popup)) {
+                    window.initOwner(owner)
+                }
+            }
         }
         if (anchor != null) {
             window.x = anchor.x

@@ -40,6 +40,8 @@ open class DetailPane(private val labelWidth: Double = LABEL_WIDTH) : VBox() {
 
     fun items(): List<Item> = items
 
+    infix fun <N: Node> N.named(name: String): N = also { addItem(name, it) }
+
     data class Item(val name: String, val control: Node)
 
     companion object {

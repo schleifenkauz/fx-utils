@@ -6,7 +6,10 @@ import javafx.geometry.Bounds
 import javafx.geometry.Point2D
 import javafx.scene.Cursor
 import javafx.scene.Node
+import javafx.scene.input.DragEvent
+import javafx.scene.input.Dragboard
 import javafx.scene.input.MouseEvent
+import javafx.scene.input.TransferMode
 import javafx.scene.layout.Region
 import javafx.stage.Window
 import kotlin.math.absoluteValue
@@ -151,3 +154,42 @@ fun Node.setupWindowDragging(window: () -> Window) {
             w.y = startCords.y + dy
         })
 }
+
+fun Node.setupDropArea(
+    condition: (db: Dragboard) -> Boolean, onDrop: (ev: DragEvent) -> Unit,
+    updateDropPossible: (Boolean) -> Unit = { value -> setPseudoClassState("drop-possible", value) }
+) {
+    addEventHandler(DragEvent.DRAG_OVER) { ev ->
+        if (condition(ev.dragboard)) {
+            ev.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
+            ev.consume()
+        }
+    }
+    addEventHandler(DragEvent.DRAG_ENTERED) { ev ->
+        if (condition(ev.dragboard)) {
+            updateDropPossible(true)
+            ev.consume()
+        }
+    }
+    addEventHandler(DragEvent.DRAG_EXITED) { ev ->
+        updateDropPossible(false)
+        ev.consume()
+    }
+    addEventHandler(DragEvent.DRAG_DROPPED) { ev ->
+        if (condition(ev.dragboard)) {
+            try {
+                onDrop(ev)
+            } catch (ex: Exception) {
+                System.err.println("Exception while dropping")
+                ex.printStackTrace()
+            }
+            ev.isDropCompleted = true
+            ev.consume()
+        }
+    }
+}
+
+fun Dragboard.hasFiles(extension: String) =
+    hasFiles() && files.all { f -> f.extension.equals(extension, ignoreCase = true) }
+
+fun Dragboard.hasFile(extension: String): Boolean = hasFiles(extension) && files.size == 1

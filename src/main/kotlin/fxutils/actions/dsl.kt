@@ -1,20 +1,16 @@
 package fxutils.actions
 
-import fxutils.*
-import javafx.application.Platform
-import javafx.event.Event
+import fxutils.KeyEventHandlerBody
+import fxutils.asPopup
+import fxutils.prompt.DetailPane
+import fxutils.registerShortcuts
+import fxutils.show
 import javafx.scene.Node
-import javafx.scene.control.*
-import javafx.scene.input.KeyEvent
-import javafx.scene.input.MouseEvent
-import org.kordamp.ikonli.Ikon
-import org.kordamp.ikonli.javafx.FontIcon
-import reaktive.value.binding.and
-import reaktive.value.binding.not
-import reaktive.value.binding.notEqualTo
-import reaktive.value.forEach
-import reaktive.value.fx.asObservableValue
+import javafx.scene.paint.Color
+import org.kordamp.ikonli.materialdesign2.MaterialDesignD
+import reaktive.value.ReactiveBoolean
 import reaktive.value.now
+import reaktive.value.reactiveValue
 
 fun <C> collectActions(body: Action.Collector<C>.() -> Unit): Action.Collector<C> = Action.Collector<C>().apply(body)
 
@@ -36,78 +32,24 @@ fun Node.registerShortcuts(actions: List<ContextualizedAction>) {
     }
 }
 
-fun Event?.isShiftDown() = (this is KeyEvent && isShiftDown) || (this is MouseEvent && isShiftDown)
-
-fun Event?.isAltDown() = (this is KeyEvent && isAltDown) || (this is MouseEvent && isAltDown)
-
-fun Event?.isControlDown() = (this is KeyEvent && isControlDown) || (this is MouseEvent && isControlDown)
-
 fun <C> action(name: String, config: Action.Builder<C>.() -> Unit) = Action.Builder<C>(name).apply(config).build()
 
 fun <C, T : SelectorBar.Option<C, T>> Action.Builder<SelectorBar<T, C>>.selects(value: T) {
     selects(value) { bar -> bar.selectedOption }
 }
 
-val Event?.isTargetTextInput
-    get() = this is KeyEvent && (target is TextInputControl || target is Spinner<*> || target is TextArea)
-
-fun ContextualizedAction.makeButton(style: String): Button {
-    val button = Button()
-    val iconObserver = this.icon.forEach { icon ->
-        Platform.runLater {
-            button.graphic = icon?.let(::FontIcon)
-        }
+fun <C> detailsAction(
+    name: String = "Details", applicability: (C) -> ReactiveBoolean = { _ -> reactiveValue(true) },
+    labelWidth: Double = DetailPane.LABEL_WIDTH, sceneFill: Color = Color.TRANSPARENT,
+    setupDetailsPane: DetailPane.(C) -> Unit,
+): Action<C> = action(name) {
+    icon(MaterialDesignD.DOTS_VERTICAL)
+    enableWhen(applicability)
+    ifNotApplicable(Action.IfNotApplicable.Hide)
+    executes { ctx, ev ->
+        val detailPane = DetailPane(labelWidth).apply { setupDetailsPane(ctx) }
+        val popup = detailPane.asPopup()
+        popup.scene.fill = sceneFill
+        popup.show(ev)
     }
-    val toggleState = this.toggleState
-    button.userData = if (toggleState != null) {
-        val toggleStateObserver = toggleState.forEach { active ->
-            Platform.runLater { button.setPseudoClassState("selected", active) }
-        }
-        iconObserver and toggleStateObserver
-    } else iconObserver
-    val iconAvailable = this.icon.notEqualTo(null)
-    val applicable = this.isApplicable
-    if (this.wrapped.ifNotApplicable == Action.IfNotApplicable.Disable) {
-        button.visibleProperty().bind(iconAvailable.asObservableValue())
-        button.disableProperty().bind(applicable.not().asObservableValue())
-    } else {
-        button.visibleProperty().bind(iconAvailable.and(applicable).asObservableValue())
-    }
-    button.tooltip = Tooltip().also { tooltip ->
-        val shortcutInfo = this.wrapped.shortcuts
-            .firstOrNull()
-            ?.let { shortcut -> " ($shortcut)" }
-            .orEmpty()
-        tooltip.userData = this.description.forEach { desc ->
-            Platform.runLater {
-                tooltip.text = "$desc $shortcutInfo"
-            }
-        }
-    }
-    val size = buttonSize(style)
-    button.setMinSize(size, size)
-    button.styleClass("icon-button", style)
-    button.setOnMouseClicked { ev -> this.execute(ev) }
-    return button
-}
-
-private fun buttonSize(style: String) = when (style) {
-    "small-icon-button" -> 16.0
-    "medium-icon-button" -> 24.0
-    "large-icon-button" -> 32.0
-    else -> throw AssertionError("Unknown icon button style: $style")
-}
-
-private fun ButtonBase.makeIconButton(ikon: Ikon, description: String, style: String) {
-    styleClass("icon-button", style)
-    graphic = FontIcon(ikon)
-    tooltip = Tooltip(description)
-    neverHGrow()
-}
-
-fun Ikon.button(action: String, style: String, execute: (MouseEvent) -> Unit = {}): Button {
-    val button = Button()
-    button.makeIconButton(this, action, style)
-    button.setOnMouseClicked { ev -> execute(ev) }
-    return button
 }

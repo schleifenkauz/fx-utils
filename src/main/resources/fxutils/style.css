@@ -86,7 +86,7 @@ FontIcon {
 }
 
 .icon-button.large-icon-button:hover {
-    -fx-background-color: #351919;
+    -fx-background-color: rgba(128, 128, 128, 0.15);
 }
 
 /*
@@ -103,7 +103,7 @@ FontIcon {
 }
 
 .icon-button.medium-icon-button:hover {
-    -fx-background-color: #351919;
+    -fx-background-color: rgba(128, 128, 128, 0.15);
 }
 
 /*

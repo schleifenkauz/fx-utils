@@ -8,11 +8,7 @@ import fxutils.ModifierValue.*
 import javafx.event.EventType
 import javafx.scene.Node
 import javafx.scene.Scene
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyCodeCombination
-import javafx.scene.input.KeyCombination
-import javafx.scene.input.KeyEvent
-import javafx.scene.input.MouseEvent
+import javafx.scene.input.*
 import java.lang.ref.WeakReference
 import java.text.ParseException
 import java.util.*
@@ -90,7 +86,7 @@ data class Shortcut(val key: KeyCode?, val control: ModifierValue, val alt: Modi
 /**
  *
  */
-class ShortcutBuilder constructor(private val key: KeyCode) {
+class ShortcutBuilder(private val key: KeyCode) {
     private var control = UP
     private var alt = UP
     private var shift = UP
@@ -133,7 +129,7 @@ fun never() = Shortcut(null, UP, UP, UP)
  * Used to configure shortcuts.
  * @param receiver the context in which the actions should be executed
  */
-class KeyEventHandlerBody<out R> constructor(val receiver: R, private val event: KeyEvent) {
+class KeyEventHandlerBody<out R>(val receiver: R, private val event: KeyEvent) {
     /**
      * If the key event matches the given [shortcut], the given [action] is executed.
      * @param consume if `false` the user is responsible for consuming the key event
@@ -289,6 +285,14 @@ val Meta get() = "Meta"
 val noModifiers get() = emptySet<String>()
 
 val MouseEvent.modifiers: Set<String>
+    get() = buildSet {
+        if (isAltDown) add(Alt)
+        if (isShiftDown) add(Shift)
+        if (isControlDown) add(Ctrl)
+        if (isMetaDown) add(Meta)
+    }
+
+val KeyEvent.modifiers: Set<String>
     get() = buildSet {
         if (isAltDown) add(Alt)
         if (isShiftDown) add(Shift)

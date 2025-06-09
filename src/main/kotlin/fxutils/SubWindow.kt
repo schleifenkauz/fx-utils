@@ -9,7 +9,7 @@ import javafx.stage.StageStyle
 class SubWindow(
     private val root: Parent,
     title: String,
-    private val type: Type = Type.ToolWindow,
+    val type: Type = Type.ToolWindow,
 ) : Stage() {
     init {
         this.title = title
