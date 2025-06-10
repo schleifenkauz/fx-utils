@@ -88,7 +88,6 @@ class IntSpinner(
     fun display(value: Int) {
         if (this.value.now == value) return
         this.value.now = value
-        valueInput.text = value.toString()
     }
 
     private fun increment() {

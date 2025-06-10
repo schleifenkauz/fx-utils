@@ -9,6 +9,21 @@
 * CheckBox
 */
 
+.check-box-alt FontIcon {
+    -fx-icon-color: white;
+}
+
+.check-box-alt .check-box-square {
+    -fx-icon-size: 20px;
+}
+
+.check-box-alt .check-box-mark {
+    -fx-icon-size: 18px;
+}
+
+.check-box-alt:hover .check-box-square {
+    -fx-icon-color: green;
+}
 
 /*
 * IntSpinner
