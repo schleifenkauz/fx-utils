@@ -1,0 +1,23 @@
+.options-box {
+    -fx-padding: 2px;
+}
+
+.option-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 2px;
+}
+
+.option-cell:selected {
+    -fx-background-color: #351919 !important;
+}
+
+.option-label {
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+}
+
+.searchable-list {
+    -fx-padding: 2px;
+    -fx-background-color: #2a2a32;
+    -fx-spacing: 3px;
+}

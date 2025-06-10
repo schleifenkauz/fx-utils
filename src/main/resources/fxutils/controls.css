@@ -1,0 +1,31 @@
+/*
+* Slider Bar
+*/
+.slider-bar > ProgressBar > .bar {
+    -fx-background-insets: 0;
+}
+
+/*
+* CheckBox
+*/
+
+
+/*
+* IntSpinner
+*/
+
+.int-spinner {
+    -fx-alignment: center;
+}
+
+.int-spinner .text-field {
+    -fx-padding: 1px;
+    -fx-border-radius: 0px;
+    -fx-background-radius: 0px;
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+}
+
+.int-spinner .text-field:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}

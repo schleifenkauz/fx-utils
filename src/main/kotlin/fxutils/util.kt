@@ -36,7 +36,8 @@ import reaktive.value.fx.asProperty
 import reaktive.value.now
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.concurrent.thread
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -143,14 +144,17 @@ fun Dialog<*>.setDefaultButton(type: ButtonType) {
 inline fun showConfirmationAlert(yesButton: ButtonType = ButtonType.YES, config: Alert.() -> Unit): Boolean =
     Alert(Alert.AlertType.CONFIRMATION).showDialog(config) == yesButton
 
+private val fxScheduler by lazy {
+    Executors.newSingleThreadScheduledExecutor { task ->
+        Thread(task, "fx-scheduler").also { it.isDaemon = true }
+    }
+}
+
 /**
  * Enqueues the given [action] into the JavaFX application thread after some [delay] which is given in milliseconds.
  */
 fun runFXWithTimeout(delay: Long = 10, action: () -> Unit) {
-    thread {
-        Thread.sleep(delay)
-        Platform.runLater(action)
-    }
+    fxScheduler.schedule({ Platform.runLater(action) }, delay, TimeUnit.MILLISECONDS)
 }
 
 
@@ -270,7 +274,6 @@ fun <R : Region> R.setFixedWidth(width: Double) = also { r ->
     r.maxWidth = width
 }
 
-
 private val robot by lazy { Robot() }
 
 val Node.mousePosition: Point2D get() = screenToLocal(robot.mousePosition)
@@ -321,4 +324,9 @@ fun Node.isActuallyVisible(): Boolean {
 fun ObservableList<Node>.addAfter(node: Node, newChild: Node) {
     val idx = indexOf(node)
     add(idx + 1, newChild)
+}
+
+fun ObservableList<Node>.replace(node: Node, newChild: Node) {
+    val idx = indexOf(node)
+    set(idx, newChild)
 }
