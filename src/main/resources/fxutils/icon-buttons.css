@@ -18,10 +18,6 @@ FontIcon {
     -fx-background-color: #351919 !important;
 }
 
-.icon-button:disabled FontIcon {
-    -fx-icon-color: grey;
-}
-
 /*
 * LARGE
 */
@@ -69,6 +65,8 @@ FontIcon {
 }
 
 .action-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 0px;
     -fx-alignment: center-left;
     -fx-spacing: 2px;
 }

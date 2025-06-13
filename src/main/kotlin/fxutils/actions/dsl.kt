@@ -12,11 +12,11 @@ import reaktive.value.ReactiveBoolean
 import reaktive.value.now
 import reaktive.value.reactiveValue
 
-fun <C> collectActions(body: Action.Collector<C>.() -> Unit): Action.Collector<C> = Action.Collector<C>().apply(body)
+fun <C : Any> collectActions(body: Action.Collector<C>.() -> Unit): Action.Collector<C> = Action.Collector<C>().apply(body)
 
 fun KeyEventHandlerBody<*>.registerActions(actions: List<ContextualizedAction>) {
     for (action in actions) {
-        for (shortcut in action.wrapped.shortcuts) {
+        for (shortcut in action.shortcuts) {
             on(shortcut) { ev ->
                 if (action.isApplicable.now) {
                     action.execute(ev)

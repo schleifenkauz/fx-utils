@@ -50,6 +50,8 @@ fun control(skin: Skin<out Control>): Control {
 }
 
 fun Control.setRoot(node: Node) {
+    val current = skin
+    if (current is SimpleSkin && current.node == node) return
     skin = null
     skin = skin(this, node)
 }
@@ -184,6 +186,7 @@ fun <N : Node> N.neverHGrow() = also { HBox.setHgrow(it, Priority.NEVER) }
 fun <N : Node> N.alwaysVGrow() = also { VBox.setVgrow(it, Priority.ALWAYS) }
 
 fun hspace(width: Double) = Region().apply { prefWidth = width }
+fun vspace(height: Double) = Region().apply { prefHeight = height }
 
 fun infiniteSpace() = Region().alwaysHGrow().alwaysVGrow()
 
@@ -197,6 +200,15 @@ fun <N : Node> N.centerChildren() = also {
 
 fun Region.centerHorizontally(parent: Region) {
     layoutXProperty().bind(parent.widthProperty().subtract(widthProperty()).divide(2))
+}
+
+fun Region.centerVertically(parent: Region) {
+    layoutYProperty().bind(parent.heightProperty().subtract(heightProperty()).divide(2))
+}
+
+fun Region.centerIn(parent: Region) {
+    centerHorizontally(parent)
+    centerVertically(parent)
 }
 
 fun ToggleSwitch.sync(variable: ReactiveVariable<Boolean>): ToggleSwitch {
@@ -329,4 +341,20 @@ fun ObservableList<Node>.addAfter(node: Node, newChild: Node) {
 fun ObservableList<Node>.replace(node: Node, newChild: Node) {
     val idx = indexOf(node)
     set(idx, newChild)
+}
+
+fun Pane.reorient(orientation: Orientation): Pane {
+    when (this) {
+        is HBox -> if (orientation == Orientation.HORIZONTAL) return this
+        is VBox -> if (orientation == Orientation.VERTICAL) return this
+        else -> throw IllegalStateException("Pane must be of type HBox or VBox")
+    }
+    val items = children.toTypedArray()
+    children.clear()
+    val newPane = when (orientation) {
+        Orientation.HORIZONTAL -> HBox(*items)
+        Orientation.VERTICAL -> VBox(*items)
+    }
+    newPane.styleClass.addAll(this.styleClass)
+    return newPane
 }

@@ -59,14 +59,14 @@ fun ContextualizedAction.makeButton(style: String): Button {
     } else iconObserver
     val iconAvailable = this.icon.notEqualTo(null)
     val applicable = this.isApplicable
-    if (this.wrapped.ifNotApplicable == Action.IfNotApplicable.Disable) {
+    if (this.ifNotApplicable == Action.IfNotApplicable.Disable) {
         button.visibleProperty().bind(iconAvailable.asObservableValue())
         button.disableProperty().bind(applicable.not().asObservableValue())
     } else {
         button.visibleProperty().bind(iconAvailable.and(applicable).asObservableValue())
     }
     button.tooltip = Tooltip().also { tooltip ->
-        val shortcutInfo = this.wrapped.shortcuts
+        val shortcutInfo = this.shortcuts
             .firstOrNull()
             ?.let { shortcut -> " ($shortcut)" }
             .orEmpty()

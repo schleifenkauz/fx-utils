@@ -2,9 +2,7 @@ package fxutils.actions
 
 import fxutils.Shortcut
 import fxutils.shortcut
-import fxutils.undo.ToggleEdit
 import fxutils.undo.UndoManager
-import fxutils.undo.compoundEdit
 import javafx.event.Event
 import org.kordamp.ikonli.Ikon
 import reaktive.value.*
@@ -38,6 +36,8 @@ class Action<in C> private constructor(
             },
             undoManager = { ctx -> f(ctx)?.let(undoManager) }
         )
+
+    override fun toString(): String = "Action #$name"
 
     enum class Category {
         Unknown, File, Edit, View;
@@ -169,7 +169,7 @@ class Action<in C> private constructor(
         )
     }
 
-    open class Collector<C>() {
+    open class Collector<C : Any>() {
         private val actions = mutableListOf<Action<C>>()
 
         var category: Category = Category.Unknown
@@ -182,17 +182,28 @@ class Action<in C> private constructor(
             actions.add(action)
         }
 
+        fun add(action: Action<C>, configure: Builder<C>.() -> Unit) {
+            val builder = Builder(
+                action.name, category = category,
+                action.description, action.shortcuts.toMutableList(),
+                action.icon, action.applicability, action.ifNotApplicable,
+                action.toggleState, action.execute, action.undoManager
+            )
+            builder.configure()
+            add(builder.build())
+        }
+
         fun addAll(collector: Collector<C>) {
             actions.addAll(collector.actions)
         }
 
-        fun <D: Any> addAll(collector: Collector<D>, f: (C) -> D?) {
+        fun <D : Any> addAll(collector: Collector<D>, f: (C) -> D?) {
             for (action in collector.actions) {
                 add(action.map(action.name, f))
             }
         }
 
-        fun <D:Any> add(action: Action<D>, name: String = action.name, f: (C) -> D?) {
+        fun <D : Any> add(action: Action<D>, name: String = action.name, f: (C) -> D?) {
             add(action.map(name, f))
         }
 
@@ -207,45 +218,23 @@ class Action<in C> private constructor(
 
         fun withContext(context: C): List<ContextualizedAction> =
             actions.map { action -> Contextualized(action, context) }
+
+        fun <D : Any> map(f: (D) -> C?): Collector<D> {
+            val collector = Collector<D>()
+            collector.addAll(this, f)
+            return collector
+        }
+
+        fun <D : Any> withContext(context: D, f: (D) -> C?): List<ContextualizedAction> =
+            map(f).withContext(context)
     }
 
     private class Contextualized<C>(
         override val wrapped: Action<C>,
-        private val context: C,
-    ) : ContextualizedAction {
-        override val icon: ReactiveValue<Ikon?> = wrapped.icon(context)
-
-        override val description: ReactiveString = wrapped.description(context)
-
-        override val isApplicable: ReactiveBoolean = wrapped.applicability(context)
-
-        override val toggleState: ReactiveBoolean? = wrapped.toggleState(context)
-
-        override fun execute(ev: Event?) {
-            val undoManager = wrapped.undoManager(context)
-            if (undoManager != null) {
-                if (toggleState !is ReactiveVariable) {
-                    undoManager.compoundEdit(description.now) {
-                        wrapped.execute.invoke(context, ev)
-                    }
-                } else {
-                    val toggleStateBefore = toggleState.now
-                    wrapped.execute.invoke(context, ev)
-                    if (toggleState.now != toggleStateBefore) {
-                        undoManager.record(ToggleEdit(description.now, toggleState))
-                    }
-                }
-            } else {
-                wrapped.execute.invoke(context, ev)
-            }
-        }
-    }
+        override val context: C,
+    ) : AbstractContextualizedAction<C>()
 
     enum class IfNotApplicable {
         Hide, Disable;
-    }
-
-    companion object {
-        val NO_ICON = null
     }
 }
