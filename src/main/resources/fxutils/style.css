@@ -13,3 +13,19 @@
 .detail-item:hover {
     -fx-background-color: rgba(100, 0, 0, 0.1);
 }
+
+.menu-item-layout {
+    -fx-alignment: center-left;
+    -fx-padding: 2px;
+    -fxpref-height: 25px;
+}
+
+Label.menu-item-description {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+}
+
+Label.shortcut-info {
+    -fx-text-fill: gray;
+    -fx-font-size: 12px;
+}

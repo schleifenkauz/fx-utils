@@ -1,18 +1,17 @@
 package fxutils.actions
 
-import fxutils.KeyEventHandlerBody
-import fxutils.asPopup
+import fxutils.*
 import fxutils.prompt.DetailPane
-import fxutils.registerShortcuts
-import fxutils.show
 import javafx.scene.Node
+import javafx.scene.input.MouseEvent
 import javafx.scene.paint.Color
 import org.kordamp.ikonli.materialdesign2.MaterialDesignD
 import reaktive.value.ReactiveBoolean
 import reaktive.value.now
 import reaktive.value.reactiveValue
 
-fun <C : Any> collectActions(body: Action.Collector<C>.() -> Unit): Action.Collector<C> = Action.Collector<C>().apply(body)
+fun <C : Any> collectActions(body: Action.Collector<C>.() -> Unit): Action.Collector<C> =
+    Action.Collector<C>().apply(body)
 
 fun KeyEventHandlerBody<*>.registerActions(actions: List<ContextualizedAction>) {
     for (action in actions) {
@@ -51,5 +50,18 @@ fun <C> detailsAction(
         val popup = detailPane.asPopup()
         popup.scene.fill = sceneFill
         popup.show(ev)
+    }
+}
+
+fun <C> Action.Builder<C>.showsContextMenu(actions: (C) -> List<ContextualizedAction>) {
+    executes { ctx, ev ->
+        val menu = contextMenu(actions(ctx))
+        val target = ev?.target as? Node ?: error("Event target must be a node, but is ${ev?.target}")
+        if (ev is MouseEvent) {
+            val anchor = ev.popupAnchor()
+            menu.show(target.scene.window, anchor.x, anchor.y)
+        } else {
+            menu.show(target.scene.window)
+        }
     }
 }
