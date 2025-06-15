@@ -27,7 +27,7 @@ val Event?.isTargetTextInput
 
 internal fun buttonSize(style: String) = when (style) {
     "small-icon-button" -> 16.0
-    "medium-icon-button" -> 24.0
+    "medium-icon-button", "mute-solo-button" -> 24.0
     "large-icon-button" -> 32.0
     else -> throw AssertionError("Unknown icon button style: $style")
 }
@@ -43,6 +43,25 @@ fun Ikon.button(action: String, style: String, execute: (MouseEvent) -> Unit = {
     val button = Button()
     button.makeIconButton(this, action, style)
     button.setOnMouseClicked { ev -> execute(ev) }
+    return button
+}
+
+fun ContextualizedAction.makeTextButton(style: String): Button {
+    val button = button(style = style)
+    val toggleState = this.toggleState
+    if (toggleState != null) {
+        button.userData = toggleState.forEach { active ->
+            Platform.runLater { button.setPseudoClassState("selected", active) }
+        }
+    }
+    button.textProperty().bind(description.asObservableValue())
+    if (shortcuts.isNotEmpty()) {
+        button.tooltip = Tooltip(shortcuts.first().toString())
+    }
+    button.setOnMouseClicked { ev ->
+        execute(ev)
+    }
+    button.disableProperty().bind(isApplicable.not().asObservableValue())
     return button
 }
 
@@ -69,8 +88,7 @@ fun ContextualizedAction.makeButton(style: String): Button {
         button.visibleProperty().bind(iconAvailable.and(applicable).asObservableValue())
     }
     button.tooltip = Tooltip()
-    val text = actionText()
-    button.tooltip.textProperty().bind(text.asObservableValue())
+    button.tooltip.textProperty().bind(actionText().asObservableValue())
     val size = buttonSize(style)
     button.setMinSize(size, size)
     button.styleClass("icon-button", style)
@@ -100,9 +118,9 @@ fun contextMenu(actions: List<ContextualizedAction>): ContextMenu {
 
 private fun ContextualizedAction.actionText(): ReactiveString {
     val shortcutInfo = this.shortcuts
-        .firstOrNull()?.let { shortcut -> "$shortcut" }
+        .firstOrNull()?.let { shortcut -> "($shortcut)" }
         .orEmpty()
-    return description.map { desc -> "$desc ($shortcutInfo)" }
+    return description.map { desc -> "$desc $shortcutInfo" }
 }
 
 fun Action<Unit>.makeButton(style: String) = withContext(Unit).makeButton(style)

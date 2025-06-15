@@ -171,6 +171,8 @@ fun <N : Node> N.styleClass(vararg classes: String) = also { it.styleClass.addAl
 
 infix fun <N : Node> N.styleClass(name: String) = also { it.styleClass.add(name) }
 
+infix fun <N : Node> N.style(style: String) = also { it.style = style }
+
 fun button(text: String = "", style: String = "sleek-button", onAction: (ev: ActionEvent) -> Unit = {}) =
     Button(text.escapeUnderscores()).styleClass(style).also { btn -> btn.setOnAction(onAction) }
 
@@ -196,6 +198,15 @@ fun <N : Node> N.centerChildren() = also {
         is VBox -> it.alignment = Pos.TOP_CENTER
         else -> {}
     }
+}
+
+fun VBox.center() = also { alignment = Pos.CENTER }
+fun HBox.center() = also { alignment = Pos.CENTER }
+
+fun Node.centered(): StackPane {
+    val pane = StackPane(this)
+    StackPane.setAlignment(this, Pos.CENTER)
+    return pane
 }
 
 fun Region.centerHorizontally(parent: Region) {
@@ -338,9 +349,21 @@ fun ObservableList<Node>.addAfter(node: Node, newChild: Node) {
     add(idx + 1, newChild)
 }
 
-fun ObservableList<Node>.replace(node: Node, newChild: Node) {
+fun ObservableList<Node>.replace(node: Node, newChild: Node?) {
     val idx = indexOf(node)
-    set(idx, newChild)
+    if (newChild == null) removeAt(idx)
+    else set(idx, newChild)
+}
+
+fun ObservableList<Node>.replace(node: Node?, newChild: Node?, defaultIdx: () -> Int = { size }) {
+    val idx = indexOf(node)
+    if (idx == -1) {
+        if (newChild == null) return
+        add(defaultIdx(), newChild)
+    } else {
+        if (newChild == null) removeAt(idx)
+        else set(idx, newChild)
+    }
 }
 
 fun Pane.reorient(orientation: Orientation): Pane {

@@ -13,11 +13,6 @@ FontIcon {
     -fx-hbar-policy: never;
 }
 
-.icon-button:selected {
-    -fx-border-color: black;
-    -fx-background-color: #351919 !important;
-}
-
 /*
 * LARGE
 */
@@ -33,6 +28,11 @@ FontIcon {
 
 .icon-button.large-icon-button:hover {
     -fx-background-color: rgba(128, 128, 128, 0.15);
+}
+
+.icon-button.large-icon-button:selected {
+    -fx-border-color: black;
+    -fx-background-color: #351919 !important;
 }
 
 /*
@@ -52,6 +52,11 @@ FontIcon {
     -fx-background-color: rgba(128, 128, 128, 0.15);
 }
 
+.icon-button.medium-icon-button:selected {
+    -fx-border-color: black;
+    -fx-background-color: #351919 !important;
+}
+
 /*
 * SMALL
 */
@@ -64,9 +69,13 @@ FontIcon {
     -fx-icon-color: #6c0000;
 }
 
+.icon-button.small-icon-button:selected {
+    -fx-border-color: black;
+    -fx-background-color: #351919 !important;
+}
+
 .action-bar {
     -fx-background-color: transparent;
-    -fx-padding: 0px;
     -fx-alignment: center-left;
     -fx-spacing: 2px;
 }
