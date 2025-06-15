@@ -11,6 +11,7 @@ import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
@@ -315,13 +316,6 @@ fun Button.disableIf(condition: ReactiveBoolean): Button {
     return this
 }
 
-fun ScrollPane.letContentFillViewPort(): ScrollPane {
-    val c = content as? Region ?: return this
-    c.minWidthProperty().bind(viewportBoundsProperty().map(Bounds::getWidth))
-    c.minHeightProperty().bind(viewportBoundsProperty().map(Bounds::getHeight))
-    return this
-}
-
 fun <W : Window> W.defaultSize(width: Double, height: Double): W {
     this.width = width
     this.height = height
@@ -380,4 +374,23 @@ fun Pane.reorient(orientation: Orientation): Pane {
     }
     newPane.styleClass.addAll(this.styleClass)
     return newPane
+}
+
+fun ScrollPane.neverSquishHorizontally() = apply {
+    minViewportWidthProperty().bind(contentProperty().flatMap { content ->
+        (content as? Region)?.widthProperty() ?: SimpleDoubleProperty(0.0)
+    })
+    hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+}
+
+fun ScrollPane.neverSquishVertically() = apply {
+    minViewportHeightProperty().bind(contentProperty().flatMap { content ->
+        (content as? Region)?.heightProperty() ?: SimpleDoubleProperty(0.0)
+    })
+    vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+}
+
+fun ScrollPane.neverSquish() = apply {
+    neverSquishHorizontally()
+    neverSquishVertically()
 }
