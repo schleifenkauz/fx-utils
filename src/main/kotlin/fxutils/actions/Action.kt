@@ -136,6 +136,10 @@ class Action<in C> private constructor(
             ifNotApplicable = IfNotApplicable.Disable
         }
 
+        fun enableWhen(predicate: (ReactiveBoolean, C) -> ReactiveBoolean) {
+            enableWhen { ctx -> predicate(applicability(ctx), ctx) }
+        }
+
         fun applicableIf(predicate: (C) -> Boolean) {
             applicability = { ctx -> reactiveValue(predicate(ctx)) }
             ifNotApplicable = IfNotApplicable.Hide
@@ -167,10 +171,19 @@ class Action<in C> private constructor(
             applicability, ifNotApplicable, toggleState, execute,
             undoManager
         )
+
+        companion object {
+            fun <C: Any> from(action: Action<C>) = Builder(
+                action.name, category = action.category,
+                action.description, action.shortcuts.toMutableList(),
+                action.icon, action.applicability, action.ifNotApplicable,
+                action.toggleState, action.execute, action.undoManager
+            )
+        }
     }
 
     open class Collector<C : Any>() {
-        private val actions = mutableListOf<Action<C>>()
+        @PublishedApi internal val actions = mutableListOf<Action<C>>()
 
         var category: Category = Category.Unknown
 
@@ -183,18 +196,22 @@ class Action<in C> private constructor(
         }
 
         fun add(action: Action<C>, configure: Builder<C>.() -> Unit) {
-            val builder = Builder(
-                action.name, category = category,
-                action.description, action.shortcuts.toMutableList(),
-                action.icon, action.applicability, action.ifNotApplicable,
-                action.toggleState, action.execute, action.undoManager
-            )
+            val builder = Builder.from(action)
             builder.configure()
             add(builder.build())
         }
 
         fun addAll(collector: Collector<C>) {
             actions.addAll(collector.actions)
+        }
+
+        @JvmName("addAllConfigured")
+        inline fun addAll(collector: Collector<C>, configure: Builder<C>.() -> Unit) {
+            for (action in collector.actions) {
+                val builder = Builder.from(action)
+                builder.configure()
+                add(builder.build())
+            }
         }
 
         fun <D : Any> addAll(collector: Collector<D>, f: (C) -> D?) {

@@ -144,6 +144,7 @@ fun isResizeCursor(cursor: Cursor?) = cursor.toString().endsWith("RESIZE")
 fun Node.setupWindowDragging(window: () -> Window) {
     var startCords = Point2D(0.0, 0.0)
     setupDragging(
+        startDragEvent = MouseEvent.MOUSE_PRESSED,
         onPressed = {
             val w = window()
             startCords = Point2D(w.x, w.y)

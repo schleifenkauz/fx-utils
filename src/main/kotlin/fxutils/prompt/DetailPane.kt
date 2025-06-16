@@ -1,5 +1,6 @@
 package fxutils.prompt
 
+import fxutils.controls.CheckBox
 import fxutils.styleClass
 import javafx.scene.Node
 import javafx.scene.control.Label
@@ -23,6 +24,9 @@ open class DetailPane(private val labelWidth: Double = LABEL_WIDTH) : VBox() {
         val box = HBox(5.0, label, control) styleClass "detail-item"
         children.add(box)
         items.add(Item(name, control))
+        if (control is CheckBox) {
+            label.setOnMouseClicked { control.toggle() }
+        }
         return box
     }
 

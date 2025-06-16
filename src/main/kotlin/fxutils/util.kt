@@ -26,6 +26,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.robot.Robot
+import javafx.scene.shape.Rectangle
 import javafx.stage.Window
 import org.controlsfx.control.ToggleSwitch
 import reaktive.Observer
@@ -284,6 +285,10 @@ fun solidBorder(fill: Color, width: Double = 1.0, radius: Double = 0.0) =
 val Bounds.middleX get() = (minX + maxX) / 2
 val Bounds.middleY get() = (minY + maxY) / 2
 
+val Rectangle.middleX get() = x + (width / 2)
+val Rectangle.middleY get() = y + (height / 2)
+val Rectangle.middlePoint get() = Point2D(middleX, middleY)
+
 fun plural(noun: String) = if (noun.endsWith("s")) "${noun}es" else "${noun}s"
 
 fun Node.setPseudoClassState(name: String, value: Boolean) {
@@ -381,6 +386,7 @@ fun ScrollPane.neverSquishHorizontally() = apply {
         (content as? Region)?.widthProperty() ?: SimpleDoubleProperty(0.0)
     })
     hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+    isFitToWidth = false
 }
 
 fun ScrollPane.neverSquishVertically() = apply {
@@ -388,6 +394,7 @@ fun ScrollPane.neverSquishVertically() = apply {
         (content as? Region)?.heightProperty() ?: SimpleDoubleProperty(0.0)
     })
     vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+    isFitToHeight = false
 }
 
 fun ScrollPane.neverSquish() = apply {
