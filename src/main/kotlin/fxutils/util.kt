@@ -12,6 +12,7 @@ import fxutils.undo.VariableEdit
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.value.ObservableNumberValue
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
@@ -180,6 +181,10 @@ fun button(text: String = "", style: String = "sleek-button", onAction: (ev: Act
 
 fun <T, F> ObservableValue<out T>.map(f: (T) -> F): ObservableValue<F> =
     Bindings.createObjectBinding({ f(value) }, this)
+
+fun ObservableNumberValue.pow(x: Double) = map { v -> v.toDouble().pow(x) }
+
+fun ObservableNumberValue.sqrt() = map { v -> sqrt(v.toDouble()) }
 
 fun <N : Region> N.alwaysHGrow() = also {
     maxWidth = Double.MAX_VALUE

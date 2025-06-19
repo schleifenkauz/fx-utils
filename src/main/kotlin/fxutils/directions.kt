@@ -3,6 +3,7 @@ package fxutils
 import javafx.geometry.HorizontalDirection
 import javafx.geometry.HorizontalDirection.LEFT
 import javafx.geometry.HorizontalDirection.RIGHT
+import javafx.geometry.Side
 import javafx.geometry.VerticalDirection
 import javafx.geometry.VerticalDirection.DOWN
 import javafx.geometry.VerticalDirection.UP
@@ -61,4 +62,16 @@ fun HorizontalDirection.invert() = when (this) {
 fun VerticalDirection.invert() = when (this) {
     UP -> DOWN
     DOWN -> UP
+}
+
+fun Side.asHorizontalDirection() = when (this) {
+    Side.LEFT -> LEFT
+    Side.RIGHT -> RIGHT
+    else -> error("Side $this is not horizontal")
+}
+
+fun Side.asVerticalDirection() = when (this) {
+    Side.TOP -> UP
+    Side.BOTTOM -> DOWN
+    else -> error("Side $this is not vertical")
 }

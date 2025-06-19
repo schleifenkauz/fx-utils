@@ -1,5 +1,6 @@
-package fxutils
+package fxutils.drag
 
+import fxutils.modifiers
 import javafx.event.EventType
 import javafx.geometry.BoundingBox
 import javafx.geometry.Bounds
@@ -17,7 +18,7 @@ import kotlin.math.absoluteValue
 fun Node.setupDragging(
     defaultCursor: Cursor = Cursor.OPEN_HAND, dragCursor: Cursor = Cursor.CLOSED_HAND,
     startDragEvent: EventType<MouseEvent> = MouseEvent.DRAG_DETECTED,
-    onPressed: (ev: MouseEvent) -> Unit = {},
+    onPressed: (ev: MouseEvent) -> Boolean = { true },
     onReleased: (ev: MouseEvent) -> Unit = {},
     relocateBy: (ev: MouseEvent, start: Point2D, old: Bounds, dx: Double, dy: Double) -> Unit,
 ) {
@@ -29,8 +30,10 @@ fun Node.setupDragging(
         if (ev.modifiers.isNotEmpty()) return@addEventHandler
         when (ev.eventType) {
             startDragEvent -> {
-                cursor = dragCursor
-                onPressed(ev)
+                if (onPressed(ev)) {
+                    onPressed(ev)
+                    cursor = dragCursor
+                }
             }
 
             MouseEvent.MOUSE_DRAGGED -> {
@@ -141,51 +144,51 @@ private fun Region.getCursor(
 
 fun isResizeCursor(cursor: Cursor?) = cursor.toString().endsWith("RESIZE")
 
-fun Node.setupWindowDragging(window: () -> Window) {
+fun Node.setupWindowDragging(cursor: Cursor, window: () -> Window?) {
     var startCords = Point2D(0.0, 0.0)
     setupDragging(
+        defaultCursor = cursor,
         startDragEvent = MouseEvent.MOUSE_PRESSED,
         onPressed = {
-            val w = window()
+            val w = window() ?: return@setupDragging false
             startCords = Point2D(w.x, w.y)
+            true
         },
         relocateBy = { _, _, _, dx, dy ->
-            val w = window()
+            val w = window() ?: return@setupDragging
             w.x = startCords.x + dx
             w.y = startCords.y + dy
         })
 }
 
-fun Node.setupDropArea(
-    condition: (db: Dragboard) -> Boolean, onDrop: (ev: DragEvent) -> Unit,
-    updateDropPossible: (Boolean) -> Unit = { value -> setPseudoClassState("drop-possible", value) }
-) {
+fun Node.setupDropArea(dropHandler: DropHandler) {
     addEventHandler(DragEvent.DRAG_OVER) { ev ->
-        if (condition(ev.dragboard)) {
+        if (dropHandler.canDrop(ev)) {
             ev.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
             ev.consume()
         }
     }
     addEventHandler(DragEvent.DRAG_ENTERED) { ev ->
-        if (condition(ev.dragboard)) {
-            updateDropPossible(true)
+        if (dropHandler.canDrop(ev)) {
+            dropHandler.run { updateDropPossible(true) }
             ev.consume()
         }
     }
     addEventHandler(DragEvent.DRAG_EXITED) { ev ->
-        updateDropPossible(false)
+        dropHandler.run { updateDropPossible(false) }
         ev.consume()
     }
     addEventHandler(DragEvent.DRAG_DROPPED) { ev ->
-        if (condition(ev.dragboard)) {
+        if (dropHandler.canDrop(ev)) {
+            ev.consume()
             try {
-                onDrop(ev)
+                if (dropHandler.drop(ev)) {
+                    ev.isDropCompleted = true
+                }
             } catch (ex: Exception) {
                 System.err.println("Exception while dropping")
                 ex.printStackTrace()
             }
-            ev.isDropCompleted = true
-            ev.consume()
         }
     }
 }
