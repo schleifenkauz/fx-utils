@@ -10,6 +10,7 @@ import javafx.scene.layout.HBox
 import org.kordamp.ikonli.Ikon
 import org.kordamp.ikonli.javafx.FontIcon
 import org.kordamp.ikonli.materialdesign2.MaterialDesignA
+import reaktive.and
 import reaktive.value.ReactiveString
 import reaktive.value.binding.and
 import reaktive.value.binding.impl.notNull
