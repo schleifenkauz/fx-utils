@@ -95,6 +95,8 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
 
     protected open fun displayText(option: E): String = extractText(option)
 
+    protected open val windowType get() = SubWindow.Type.Popup
+
     override fun requestFocus() {
         searchText.requestFocus()
         searchText.selectAll()
@@ -144,7 +146,9 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
                 }
 
                 "Ctrl+Enter".shortcut.matches(ev) -> {
-                    confirmText(searchText.text)
+                    val text = searchText.text.takeIf { it.isNotBlank() }
+                        ?: selectedOption?.let { extractText(it) } ?: return@addEventFilter
+                    confirmText(text)
                     ev.consume()
                 }
             }
@@ -180,7 +184,7 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         refilterOptions()
         if (initialOption in filteredOptions) select(initialOption)
         if (_window == null) {
-            _window = SubWindow(this, title, type = SubWindow.Type.Popup)
+            _window = SubWindow(this, title, type = windowType)
             if (owner != null && window.owner == null) {
                 if (owner !is Popup && !(owner is SubWindow && owner.type == SubWindow.Type.Popup)) {
                     window.initOwner(owner)
