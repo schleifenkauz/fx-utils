@@ -7,8 +7,8 @@ import javafx.scene.layout.VBox
 
 open class CompoundPrompt<R : Any>(
     title: String, labelWidth: Double = DetailPane.LABEL_WIDTH,
-    cancelText: String = "Cancel",
-    confirmText: String = "Confirm"
+    cancelText: String = "_Cancel",
+    confirmText: String = "_Ok"
 ) : ConfirmablePrompt<R, DetailPane>(title, cancelText, confirmText) {
     private lateinit var confirm: () -> R?
 

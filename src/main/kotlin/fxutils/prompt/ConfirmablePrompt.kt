@@ -1,23 +1,26 @@
 package fxutils.prompt
 
 import fxutils.SubWindow
-import fxutils.button
-import fxutils.shortcut
+import fxutils.registerShortcuts
 import fxutils.styleClass
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Button
-import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 
 abstract class ConfirmablePrompt<R : Any, N : Node>(
     final override val title: String,
-    cancelText: String = "Cancel",
-    confirmText: String = "Confirm"
+    cancelText: String = "_Cancel",
+    confirmText: String = "_Ok"
 ) : Prompt<R?, N>() {
-    val cancelButton = button(cancelText) { commit(null) }
-    val confirmButton = button(confirmText) { commit(confirm()) }
+    val cancelButton = Button(cancelText) styleClass "sleek-button"
+    val confirmButton = Button(confirmText) styleClass "sleek-button"
+
+    init {
+        cancelButton.setOnAction { commit(null) }
+        confirmButton.setOnAction { commit(confirm()) }
+    }
 
     override val windowType: SubWindow.Type
         get() = SubWindow.Type.Prompt
@@ -33,9 +36,9 @@ abstract class ConfirmablePrompt<R : Any, N : Node>(
         val buttons = HBox(cancelButton, confirmButton) styleClass "buttons-bar"
         buttons.children.addAll(extraButtons())
         layout.children.add(buttons)
-        layout.addEventFilter(KeyEvent.KEY_TYPED) { ev ->
-            if ("Enter".shortcut.matches(ev)) {
-                if (ev.target == layout) commit(confirm())
+        layout.registerShortcuts {
+            on("Ctrl+Enter") {
+                commit(confirm())
             }
         }
         return layout

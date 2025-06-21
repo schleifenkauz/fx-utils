@@ -27,7 +27,6 @@ fun Node.setupDragging(
     var oldBounds: Bounds? = null
     cursor = defaultCursor
     addEventHandler(MouseEvent.ANY) { ev ->
-        if (ev.modifiers.isNotEmpty()) return@addEventHandler
         when (ev.eventType) {
             startDragEvent -> {
                 if (onPressed(ev)) {
