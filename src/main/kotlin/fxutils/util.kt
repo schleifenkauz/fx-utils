@@ -9,6 +9,7 @@ package fxutils
 import fxutils.undo.ToggleEdit
 import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
+import javafx.animation.AnimationTimer
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleDoubleProperty
@@ -160,6 +161,21 @@ private val fxScheduler by lazy {
  */
 fun runFXWithTimeout(delay: Long = 10, action: () -> Unit) {
     fxScheduler.schedule({ Platform.runLater(action) }, delay, TimeUnit.MILLISECONDS)
+}
+
+fun runAfterLayout(action: () -> Unit) {
+    Platform.runLater {
+        object : AnimationTimer() {
+            private var alreadyRun = false
+
+            override fun handle(now: Long) {
+                if (alreadyRun) return
+                stop()
+                action()
+                alreadyRun = true
+            }
+        }.start()
+    }
 }
 
 
