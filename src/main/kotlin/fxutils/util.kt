@@ -41,6 +41,7 @@ import reaktive.value.now
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -175,6 +176,14 @@ fun runAfterLayout(action: () -> Unit) {
                 alreadyRun = true
             }
         }.start()
+    }
+}
+
+fun <T> Future<T>.awaitFx(action: (T) -> Unit) {
+    check(Platform.isFxApplicationThread()) { "Not on FX Application Thread" }
+    fxScheduler.execute {
+        val value = get()
+        Platform.runLater { action(value) }
     }
 }
 

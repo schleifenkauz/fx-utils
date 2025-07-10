@@ -66,7 +66,9 @@ fun ContextualizedAction.makeTextButton(style: String): Button {
     return button
 }
 
-fun ContextualizedAction.makeButton(style: String): Button {
+fun ContextualizedAction.makeButton(vararg style: String): Button = makeButton(style.asList())
+
+fun ContextualizedAction.makeButton(style: List<String>): Button {
     val button = Button()
     val iconObserver = this.icon.forEach { icon ->
         Platform.runLater {
@@ -90,9 +92,9 @@ fun ContextualizedAction.makeButton(style: String): Button {
     }
     button.tooltip = Tooltip()
     button.tooltip.textProperty().bind(actionText().asObservableValue())
-    val size = buttonSize(style)
+    val size = buttonSize(style[0])
     button.setMinSize(size, size)
-    button.styleClass("icon-button", style)
+    button.styleClass("icon-button", *style.toTypedArray())
     button.setOnMouseClicked { ev -> this.execute(ev) }
     return button
 }
