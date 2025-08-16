@@ -192,7 +192,7 @@ fun Node.setupDropArea(dropHandler: DropHandler) {
     }
 }
 
-fun Dragboard.hasFiles(extension: String) =
-    hasFiles() && files.all { f -> f.extension.equals(extension, ignoreCase = true) }
+fun Dragboard.hasFiles(vararg extensions: String) =
+    hasFiles() && files.all { f -> f.extension in extensions }
 
-fun Dragboard.hasFile(extension: String): Boolean = hasFiles(extension) && files.size == 1
+fun Dragboard.hasFile(vararg extensions: String): Boolean = hasFiles(*extensions) && files.size == 1
