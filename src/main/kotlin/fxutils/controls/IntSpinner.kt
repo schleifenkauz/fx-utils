@@ -55,6 +55,7 @@ class IntSpinner(
                 updateValueFromTextInput()
             }
         }
+        valueInput.setOnAction { updateValueFromTextInput() }
         valueObserver = value.forEach { v ->
             valueInput.text = v.toString()
         }
