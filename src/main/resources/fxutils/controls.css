@@ -30,7 +30,7 @@
 */
 
 .int-spinner {
-    -fx-alignment: center;
+    -fx-alignment: center-left;
 }
 
 .int-spinner .text-field {

@@ -9,7 +9,7 @@ fun <T : Any> showSelectorDialog(
     items: List<T>, initialValue: T? = null,
     anchor: Point2D? = null,
     owner: Window? = null,
-    stringConverter: (T) -> String = { it.toString() }
+    stringConverter: (T) -> String = { it.toString() },
 ): T? {
     val view = object : SimpleSearchableListView<T>(items, title) {
         override fun extractText(option: T): String = stringConverter(option)
@@ -20,15 +20,19 @@ fun <T : Any> showSelectorDialog(
 fun <T : Any> showSelectorDialog(
     title: String,
     items: List<T>, initialValue: T? = null,
-    anchorNode: Node? = null, stringConverter: (T) -> String = { it.toString() }
+    anchorNode: Node? = null, stringConverter: (T) -> String = { it.toString() },
 ): T? = showSelectorDialog(
     title, items, initialValue,
     anchorNode?.localToScreen(0.0, 0.0), anchorNode?.scene?.window,
     stringConverter
 )
 
-fun <R : Any> compoundPrompt(title: String, body: CompoundPrompt<R>.() -> Unit): CompoundPrompt<R> {
-    val input = CompoundPrompt<R>(title)
+fun <R : Any> compoundPrompt(
+    title: String, labelWidth: Double = DetailPane.LABEL_WIDTH,
+    okText: String = "_Ok", cancelText: String = "_Cancel",
+    body: CompoundPrompt<R>.() -> Unit,
+): CompoundPrompt<R> {
+    val input = CompoundPrompt<R>(title, labelWidth, cancelText, okText)
     input.body()
     return input
 }
