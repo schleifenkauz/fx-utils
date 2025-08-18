@@ -43,7 +43,7 @@ class SubWindow(
             }
 
             Type.ToolWindow -> {
-                initStyle(StageStyle.DECORATED)
+                initStyle(StageStyle.UTILITY)
             }
 
             Type.Undecorated -> {
@@ -60,12 +60,6 @@ class SubWindow(
                 on("Ctrl+W") { hide() }
             }
         }
-    }
-
-    fun showOrBringToFront() {
-        if (!isShowing) show()
-        else toFront()
-        requestFocus()
     }
 
     enum class Type {

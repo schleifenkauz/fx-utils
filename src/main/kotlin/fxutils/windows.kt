@@ -113,3 +113,16 @@ fun Node.asPopup(): Popup {
     popup.isAutoHide = true
     return popup
 }
+
+fun Stage.showAndBringToFront() {
+    if (!isShowing) {
+        setOnShown {
+            toFront()
+            scene.root.requestFocus()
+        }
+        show()
+    } else {
+        toFront()
+        scene.root.requestFocus()
+    }
+}
