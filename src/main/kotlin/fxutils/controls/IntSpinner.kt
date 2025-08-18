@@ -13,7 +13,11 @@ import javafx.scene.layout.HBox
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import reaktive.Observer
 import reaktive.value.ReactiveVariable
+import reaktive.value.binding.equalTo
+import reaktive.value.binding.or
 import reaktive.value.forEach
+import reaktive.value.fx.asObservableValue
+import reaktive.value.fx.asReactiveValue
 import reaktive.value.now
 import reaktive.value.reactiveVariable
 
@@ -61,8 +65,12 @@ class IntSpinner(
         }
         valueInput.autoSize(minColumns = this::minColumns)
         valueInput.editableProperty().bind(disabledProperty().not())
-        btnDecrement.disableProperty().bind(disabledProperty())
-        btnIncrement.disableProperty().bind(disabledProperty())
+        btnDecrement.disableProperty().bind(
+            value.equalTo(min).or(disabledProperty().asReactiveValue()).asObservableValue()
+        )
+        btnIncrement.disableProperty().bind(
+            value.equalTo(max).or(disabledProperty().asReactiveValue()).asObservableValue()
+        )
     }
 
     fun setupUndo(variableDescription: String, manager: UndoManager) = also {
