@@ -191,12 +191,25 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
                 }
             }
         }
-        if (anchor != null) {
-            window.x = anchor.x
-            window.y = anchor.y
-        } else window.centerOnScreen()
         val screen = Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
-        window.maxHeight = screen.visualBounds.maxY - window.y
+        if (anchor != null) {
+            val screenBounds = screen.bounds
+            window.setOnShown {
+                if (anchor.y + window.height > screenBounds.height) {
+                    window.y = (anchor.y - window.height).coerceAtLeast(0.0)
+                } else {
+                    window.y = anchor.y
+                }
+                if (anchor.x + window.width > screenBounds.width) {
+                    window.x = (anchor.x - window.width).coerceAtLeast(0.0)
+                } else {
+                    window.x = anchor.x
+                }
+            }
+        } else {
+            window.centerOnScreen()
+            window.maxHeight = screen.visualBounds.maxY - window.y
+        }
         window.showAndWait()
         return result
     }

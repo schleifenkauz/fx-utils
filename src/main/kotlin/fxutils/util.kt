@@ -32,12 +32,10 @@ import javafx.scene.shape.Rectangle
 import javafx.stage.Window
 import org.controlsfx.control.ToggleSwitch
 import reaktive.Observer
-import reaktive.value.ReactiveBoolean
-import reaktive.value.ReactiveVariable
-import reaktive.value.forEach
+import reaktive.value.*
+import reaktive.value.binding.map
 import reaktive.value.fx.asObservableValue
 import reaktive.value.fx.asProperty
-import reaktive.value.now
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
@@ -200,6 +198,14 @@ fun <N : Node> N.styleClass(vararg classes: String) = also { it.styleClass.addAl
 infix fun <N : Node> N.styleClass(name: String) = also { it.styleClass.add(name) }
 
 infix fun <N : Node> N.style(style: String) = also { it.style = style }
+
+fun button(text: ReactiveString, style: String = "sleek-button", onAction: (ActionEvent) -> Unit = {}): Button {
+    val btn = Button()
+    btn.textProperty().bind(text.map(String::escapeUnderscores).asObservableValue())
+    btn.setOnAction(onAction)
+    btn.styleClass(style)
+    return btn
+}
 
 fun button(text: String = "", style: String = "sleek-button", onAction: (ev: ActionEvent) -> Unit = {}) =
     Button(text.escapeUnderscores()).styleClass(style).also { btn -> btn.setOnAction(onAction) }
