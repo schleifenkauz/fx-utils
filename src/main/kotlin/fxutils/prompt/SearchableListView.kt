@@ -191,10 +191,11 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
                 }
             }
         }
-        val screen = Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
         if (anchor != null) {
-            val screenBounds = screen.bounds
+            val screen =
+                Screen.getScreensForRectangle(anchor.x, anchor.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
             window.setOnShown {
+                val screenBounds = screen.bounds
                 if (anchor.y + window.height > screenBounds.height) {
                     window.y = (anchor.y - window.height).coerceAtLeast(0.0)
                 } else {
@@ -208,6 +209,8 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
             }
         } else {
             window.centerOnScreen()
+            val screen =
+                Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
             window.maxHeight = screen.visualBounds.maxY - window.y
         }
         window.showAndWait()

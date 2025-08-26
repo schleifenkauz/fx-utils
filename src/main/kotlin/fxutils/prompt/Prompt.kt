@@ -13,6 +13,7 @@ import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.stage.Screen
 import javafx.stage.Window
+import javafx.stage.WindowEvent
 
 abstract class Prompt<R, N : Node> {
     private var commited = false
@@ -53,12 +54,16 @@ abstract class Prompt<R, N : Node> {
         if (_window == null) {
             _window = SubWindow(layout, title, windowType)
             if (owner != null) window.initOwner(owner)
-            window.setOnShown { onReceiveFocus() }
+            window.addEventFilter(WindowEvent.WINDOW_SHOWN) {
+                onReceiveFocus()
+            }
         }
-        val screen = Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
+        window.sizeToScene()
         if (coords != null) {
-            val screenBounds = screen.bounds
-            window.setOnShown {
+            window.setOnShowing {
+                val screen =
+                    Screen.getScreensForRectangle(coords.x, coords.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
+                val screenBounds = screen.bounds
                 if (coords.y + window.height > screenBounds.height) {
                     window.y = (coords.y - window.height).coerceAtLeast(0.0)
                 } else {
@@ -71,9 +76,12 @@ abstract class Prompt<R, N : Node> {
                 }
             }
         } else {
+            val screen =
+                Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
             window.centerOnScreen()
             window.maxHeight = screen.visualBounds.maxY - window.y
         }
+        window.showAndWait()
         @Suppress("UNCHECKED_CAST")
         return if (commited) result as R else getDefault()
     }
