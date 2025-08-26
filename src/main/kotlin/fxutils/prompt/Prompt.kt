@@ -11,6 +11,7 @@ import javafx.scene.control.Label
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
+import javafx.stage.Screen
 import javafx.stage.Window
 
 abstract class Prompt<R, N : Node> {
@@ -54,12 +55,25 @@ abstract class Prompt<R, N : Node> {
             if (owner != null) window.initOwner(owner)
             window.setOnShown { onReceiveFocus() }
         }
-        window.sizeToScene()
+        val screen = Screen.getScreensForRectangle(window.x, window.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
         if (coords != null) {
-            window.x = coords.x
-            window.y = coords.y
-        } else window.centerOnScreen()
-        window.showAndWait()
+            val screenBounds = screen.bounds
+            window.setOnShown {
+                if (coords.y + window.height > screenBounds.height) {
+                    window.y = (coords.y - window.height).coerceAtLeast(0.0)
+                } else {
+                    window.y = coords.y
+                }
+                if (coords.x + window.width > screenBounds.width) {
+                    window.x = (coords.x - window.width).coerceAtLeast(0.0)
+                } else {
+                    window.x = coords.x
+                }
+            }
+        } else {
+            window.centerOnScreen()
+            window.maxHeight = screen.visualBounds.maxY - window.y
+        }
         @Suppress("UNCHECKED_CAST")
         return if (commited) result as R else getDefault()
     }
