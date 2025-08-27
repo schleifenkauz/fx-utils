@@ -245,12 +245,14 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         property: KMutableProperty0<E>, default: E = property.get(),
         undoManager: UndoManager? = null, actionDescription: String? = null,
         displayText: (E) -> String = this::displayText,
+        onUpdate: (E, E) -> Unit = { _, _ -> }
     ): Button = button(displayText(property.get()), style = "selector-button").apply {
         showPopupOnClick(default, property::get) { value ->
             if (property.get() != value) {
                 val oldValue = property.get()
                 property.set(value)
                 undoManager?.record(PropertyEdit(property, oldValue, value, actionDescription ?: title))
+                onUpdate(oldValue, value)
                 text = displayText(value).escapeUnderscores()
             }
         }
@@ -260,6 +262,7 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
         property: ReactiveVariable<E>, default: E = property.get(),
         undoManager: UndoManager? = null, actionDescription: String? = null,
         displayText: (E) -> String = this::displayText,
+        onUpdate: (E, E) -> Unit = { _, _ -> }
     ): Button = button(style = "selector-button").apply {
         textProperty().bind(property.map { txt -> displayText(txt).escapeUnderscores() }.asObservableValue())
         showPopupOnClick(default, property::get) { value ->
@@ -267,6 +270,7 @@ abstract class SearchableListView<E : Any>(private val title: String) : VBox() {
                 val oldValue = property.now
                 property.set(value)
                 undoManager?.record(VariableEdit(property, oldValue, value, actionDescription ?: title))
+                onUpdate(oldValue, value)
             }
         }
     }
