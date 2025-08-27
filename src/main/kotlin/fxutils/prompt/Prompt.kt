@@ -13,7 +13,6 @@ import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.stage.Screen
 import javafx.stage.Window
-import javafx.stage.WindowEvent
 
 abstract class Prompt<R, N : Node> {
     private var commited = false
@@ -54,7 +53,7 @@ abstract class Prompt<R, N : Node> {
         if (_window == null) {
             _window = SubWindow(layout, title, windowType)
             if (owner != null) window.initOwner(owner)
-            window.addEventFilter(WindowEvent.WINDOW_SHOWN) {
+            window.setOnShown {
                 onReceiveFocus()
             }
         }
