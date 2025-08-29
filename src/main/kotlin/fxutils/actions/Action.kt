@@ -89,6 +89,14 @@ class Action<in C> private constructor(
             execute = { ctx, _ -> body(ctx) }
         }
 
+        fun executesFirst(body: (C, ev: Event?) -> Unit) {
+            val after = execute
+            execute = { ctx, ev ->
+                body.invoke(ctx, ev)
+                after.invoke(ctx, ev)
+            }
+        }
+
         inline fun <reified T : C> executesOn(crossinline action: (obj: T, ev: Event?) -> Unit) {
             applicableIf { obj -> obj is T }
             executes { obj, ev -> action(obj as T, ev) }

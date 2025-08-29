@@ -43,6 +43,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.reflect.KMutableProperty0
 
 fun control(skin: Skin<out Control>): Control {
     return object : Control() {
@@ -284,6 +285,11 @@ fun CheckBox.sync(variable: ReactiveVariable<Boolean>, description: String, undo
 
 fun <T> Spinner<T>.sync(variable: ReactiveVariable<T>): Spinner<T> {
     valueFactory.valueProperty().bindBidirectional(variable.asProperty())
+    return this
+}
+
+fun <T> Spinner<T>.sync(variable: KMutableProperty0<T>): Spinner<T> {
+    valueFactory.valueProperty().addListener { _, _, value -> variable.set(value) }
     return this
 }
 
