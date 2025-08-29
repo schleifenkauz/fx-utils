@@ -3,9 +3,10 @@ package fxutils.drag
 import fxutils.setPseudoClassState
 import javafx.scene.Node
 import javafx.scene.input.DragEvent
+import javafx.scene.input.TransferMode
 
 interface DropHandler {
-    fun canDrop(event: DragEvent): Boolean
+    fun acceptedTransferModes(event: DragEvent): Array<out TransferMode>
 
     fun drop(event: DragEvent): Boolean
 

@@ -10,7 +10,6 @@ import javafx.scene.Node
 import javafx.scene.input.DragEvent
 import javafx.scene.input.Dragboard
 import javafx.scene.input.MouseEvent
-import javafx.scene.input.TransferMode
 import javafx.scene.layout.Region
 import javafx.stage.Window
 import kotlin.math.absoluteValue
@@ -162,13 +161,14 @@ fun Node.setupWindowDragging(cursor: Cursor, window: () -> Window?) {
 
 fun Node.setupDropArea(dropHandler: DropHandler) {
     addEventHandler(DragEvent.DRAG_OVER) { ev ->
-        if (dropHandler.canDrop(ev)) {
-            ev.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
+        val acceptedTransferModes = dropHandler.acceptedTransferModes(ev)
+        if (acceptedTransferModes.isNotEmpty()) {
+            ev.acceptTransferModes(*acceptedTransferModes)
             ev.consume()
         }
     }
     addEventHandler(DragEvent.DRAG_ENTERED) { ev ->
-        if (dropHandler.canDrop(ev)) {
+        if (dropHandler.acceptedTransferModes(ev).isNotEmpty()) {
             dropHandler.run { updateDropPossible(true) }
             ev.consume()
         }
@@ -178,7 +178,7 @@ fun Node.setupDropArea(dropHandler: DropHandler) {
         ev.consume()
     }
     addEventHandler(DragEvent.DRAG_DROPPED) { ev ->
-        if (dropHandler.canDrop(ev)) {
+        if (dropHandler.acceptedTransferModes(ev).isNotEmpty()) {
             ev.consume()
             try {
                 if (dropHandler.drop(ev)) {
