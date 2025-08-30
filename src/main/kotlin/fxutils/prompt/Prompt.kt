@@ -90,9 +90,12 @@ abstract class Prompt<R> {
                 window.y =
                     if (coords.y + window.height <= screenBounds.maxY) coords.y
                     else {
-                        val anchorHeight = anchorNode?.height ?: 0.0
-                        val offset = anchorOffset?.y ?: 0.0
-                        val y = coords.y - window.height - anchorHeight - 2 * offset
+                        var y = coords.y - window.height
+                        if (anchorNode != null) {
+                            val anchorHeight = anchorNode!!.height
+                            y -= anchorHeight
+                            if (anchorOffset != null) y -= (anchorOffset!!.y - anchorHeight)
+                        }
                         y.coerceAtLeast(0.0)
                     }
             }
