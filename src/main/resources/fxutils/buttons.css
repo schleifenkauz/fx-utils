@@ -1,26 +1,26 @@
-Button.sleek-button, Button.selector-button {
+.button.sleek-button, .button.selector-button {
     -fx-background-color: black !important;
     -fx-border-color: rgba(128, 128, 128, 0.3) !important;
 }
 
-Button.sleek-button {
+.button.sleek-button {
     -fx-padding: 3px !important;
     -fx-border-width: 2px;
     -fx-background-radius: 5px !important;
     -fx-border-radius: 5px !important;
 }
 
-Button.selector-button {
+.button.selector-button {
     -fx-padding: 2px !important;
     -fx-border-width: 1px;
     -fx-background-radius: 2px !important;
     -fx-border-radius: 2px !important;
 }
 
-Button.sleek-button:hover, Button.selector-button:hover {
+.button.sleek-button:hover, .button.selector-button:hover {
     -fx-background-color: #351919 !important;
 }
 
-Button.sleek-button:focused, Button.selector-button:focused {
+.button.sleek-button:focused, .button.selector-button:focused {
     -fx-border-color: #501717 !important;
 }

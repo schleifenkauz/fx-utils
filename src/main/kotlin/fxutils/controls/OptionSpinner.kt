@@ -3,7 +3,7 @@ package fxutils.controls
 import fxutils.actions.action
 import fxutils.actions.makeButton
 import fxutils.actions.registerShortcuts
-import fxutils.prompt.SearchableListView
+import fxutils.prompt.SelectorPrompt
 import fxutils.setRoot
 import fxutils.styleClass
 import javafx.scene.control.Control
@@ -24,7 +24,7 @@ class OptionSpinner<E : Any>(
     private val selectedOption: ReactiveVariable<E>,
     private val options: List<E>,
     private val toString: (E) -> String = { it.toString() },
-    private val selectorPopup: SearchableListView<E>? = null,
+    private val selectorPrompt: SelectorPrompt<E>? = null,
 ) : Control() {
     private val selectedIndex = reactiveVariable(options.indexOf(selectedOption.now))
 
@@ -48,7 +48,7 @@ class OptionSpinner<E : Any>(
             when (ev.button) {
                 MouseButton.PRIMARY -> label.requestFocus()
                 MouseButton.SECONDARY -> {
-                    val option = selectorPopup?.showPopup(ev) ?: return@setOnMouseClicked
+                    val option = selectorPrompt?.showPopup(ev) ?: return@setOnMouseClicked
                     select(option)
                 }
                 else -> {}

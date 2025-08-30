@@ -11,14 +11,25 @@ import javafx.scene.control.Label
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
+import javafx.stage.Popup
 import javafx.stage.Screen
 import javafx.stage.Window
 
 abstract class Prompt<R> {
     private var commited = false
     private var result: R? = null
-    private var _window: SubWindow? = null
+    protected var _window: SubWindow? = null
+        private set
     protected val window get() = _window ?: error("Window for prompt $title not initialized")
+
+    protected var anchor: Point2D? = null
+        private set
+
+    private var anchorNode: Region? = null
+    private var anchorOffset: Point2D? = null
+
+    protected var ownerWindow: Window? = null
+        private set
 
     protected abstract val content: Node
 
@@ -48,31 +59,42 @@ abstract class Prompt<R> {
         return showDialog(layout, owner, coords)
     }
 
+    protected open fun beforeShowing() {
+
+    }
+
     private fun showDialog(layout: Parent, owner: Window?, coords: Point2D?): R {
+        beforeShowing()
         commited = false
+        this.anchor = anchor
         if (_window == null) {
             _window = SubWindow(layout, title, windowType)
-            if (owner != null) window.initOwner(owner)
+            if (owner != null && owner !is Popup && !(owner is SubWindow && owner.type == SubWindow.Type.Popup)) {
+                window.initOwner(owner)
+                this.ownerWindow = owner
+            }
             window.setOnShown {
                 onReceiveFocus()
             }
         }
         window.sizeToScene()
         if (coords != null) {
-            window.setOnShowing {
+            window.setOnShown {
+                onReceiveFocus()
                 val screen =
                     Screen.getScreensForRectangle(coords.x, coords.y, 1.0, 1.0).firstOrNull() ?: Screen.getPrimary()
                 val screenBounds = screen.bounds
-                if (coords.y + window.height > screenBounds.height) {
-                    window.y = (coords.y - window.height).coerceAtLeast(0.0)
-                } else {
-                    window.y = coords.y
-                }
-                if (coords.x + window.width > screenBounds.width) {
-                    window.x = (coords.x - window.width).coerceAtLeast(0.0)
-                } else {
-                    window.x = coords.x
-                }
+                window.height = window.height.coerceAtMost(screenBounds.height)
+                window.width = window.width.coerceAtMost(screenBounds.width)
+                window.x = coords.x.coerceAtMost(screenBounds.maxX - window.width)
+                window.y =
+                    if (coords.y + window.height <= screenBounds.maxY) coords.y
+                    else {
+                        val anchorHeight = anchorNode?.height ?: 0.0
+                        val offset = anchorOffset?.y ?: 0.0
+                        val y = coords.y - window.height - anchorHeight - 2 * offset
+                        y.coerceAtLeast(0.0)
+                    }
             }
         } else {
             val screen =
@@ -88,6 +110,8 @@ abstract class Prompt<R> {
     fun showDialog(anchorNode: Region, offset: Point2D = Point2D(0.0, anchorNode.height + 5.0)): R {
         val layout = createLayout()
         val coords = anchorNode.localToScreen(offset)
+        this.anchorNode = anchorNode
+        this.anchorOffset = offset
         return showDialog(layout, anchorNode.scene.window, coords)
     }
 
@@ -103,5 +127,9 @@ abstract class Prompt<R> {
             is Window -> showDialog(target)
             else -> showDialog()
         }
+    }
+
+    protected fun hide() {
+        window.hide()
     }
 }
