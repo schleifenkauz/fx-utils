@@ -44,3 +44,21 @@
 .int-spinner .text-field:focused {
     -fx-background-color: rgba(255, 255, 255, 0.1);
 }
+
+/*
+* OptionSpinner
+*/
+
+.option-spinner {
+    -fx-alignment: center;
+    -fx-focus-traversable: true;
+}
+
+.option-spinner-label {
+    -fx-focus-traversable: true;
+    -fx-alignment: center;
+}
+
+.option-spinner-label:focused {
+    -fx-text-fill: green;
+}

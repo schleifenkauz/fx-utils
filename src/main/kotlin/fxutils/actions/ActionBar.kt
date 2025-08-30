@@ -16,6 +16,7 @@ import javafx.scene.layout.StackPane
 open class ActionBar private constructor(
     private val actions: MutableList<ContextualizedAction>,
     private val buttonStyle: String,
+    layoutStyle: String? = null
 ) : Control() {
     private var layout: Pane = HBox() styleClass "action-bar"
         private set(value) {
@@ -26,13 +27,15 @@ open class ActionBar private constructor(
     private val buttons = mutableMapOf<ContextualizedAction, Button>()
 
     constructor(
-        actions: Collection<ContextualizedAction>, buttonStyle: String,
+        actions: Collection<ContextualizedAction>,
+        buttonStyle: String, layoutStyle: String? = null
     ) : this(actions.toMutableList(), buttonStyle)
 
     constructor(buttonStyle: String) : this(mutableListOf(), buttonStyle)
 
     init {
         styleClass("action-bar")
+        if (layoutStyle != null) layout.styleClass(layoutStyle)
         setRoot(layout)
         neverHGrow()
         for (action in actions) {

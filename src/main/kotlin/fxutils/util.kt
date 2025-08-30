@@ -224,7 +224,9 @@ fun <N : Region> N.alwaysHGrow() = also {
 }
 
 fun <N : Node> N.neverHGrow() = also { HBox.setHgrow(it, Priority.NEVER) }
+
 fun <N : Node> N.alwaysVGrow() = also { VBox.setVgrow(it, Priority.ALWAYS) }
+fun <N: Node> N.neverVGrow() = also { VBox.setVgrow(it, Priority.NEVER) }
 
 fun hspace(width: Double) = Region().apply { prefWidth = width }
 fun vspace(height: Double) = Region().apply { prefHeight = height }
