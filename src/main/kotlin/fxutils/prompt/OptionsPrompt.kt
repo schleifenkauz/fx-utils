@@ -9,7 +9,7 @@ class OptionsPrompt(
     override val title: String,
     private val options: List<String>,
     private val defaultOption: String,
-) : Prompt<String, HBox>() {
+) : Prompt<String>() {
     private var defaultButton: Button? = null
 
     override val content: HBox = HBox() styleClass "buttons-bar"

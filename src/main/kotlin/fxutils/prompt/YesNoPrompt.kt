@@ -9,7 +9,7 @@ class YesNoPrompt(
     private val question: String,
     private val cancellable: Boolean = false,
     private val default: Boolean? = if (cancellable) null else false
-) : Prompt<Boolean?, HBox>() {
+) : Prompt<Boolean?>() {
     private val btnCancel = button("Cancel") { commit(null) }
     private val btnNo = button("No") { commit(false) }
     private val btnYes = button("Yes") { commit(true) }

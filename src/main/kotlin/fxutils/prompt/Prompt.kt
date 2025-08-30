@@ -14,13 +14,13 @@ import javafx.scene.layout.VBox
 import javafx.stage.Screen
 import javafx.stage.Window
 
-abstract class Prompt<R, N : Node> {
+abstract class Prompt<R> {
     private var commited = false
     private var result: R? = null
     private var _window: SubWindow? = null
     protected val window get() = _window ?: error("Window for prompt $title not initialized")
 
-    protected abstract val content: N
+    protected abstract val content: Node
 
     protected abstract val title: String
 

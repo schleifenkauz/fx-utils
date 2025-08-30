@@ -9,7 +9,7 @@ open class CompoundPrompt<R : Any>(
     title: String, labelWidth: Double = DetailPane.LABEL_WIDTH,
     cancelText: String = "_Cancel",
     confirmText: String = "_Ok"
-) : ConfirmablePrompt<R, DetailPane>(title, cancelText, confirmText) {
+) : ConfirmablePrompt<R>(title, cancelText, confirmText) {
     private lateinit var confirm: () -> R?
 
     final override val content: DetailPane = DetailPane(labelWidth)

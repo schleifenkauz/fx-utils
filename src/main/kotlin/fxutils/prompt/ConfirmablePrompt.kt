@@ -3,17 +3,16 @@ package fxutils.prompt
 import fxutils.SubWindow
 import fxutils.registerShortcuts
 import fxutils.styleClass
-import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 
-abstract class ConfirmablePrompt<R : Any, N : Node>(
+abstract class ConfirmablePrompt<R : Any>(
     final override val title: String,
     cancelText: String = "_Cancel",
     confirmText: String = "_Ok"
-) : Prompt<R?, N>() {
+) : Prompt<R?>() {
     val cancelButton = Button(cancelText) styleClass "sleek-button"
     val confirmButton = Button(confirmText) styleClass "sleek-button"
 

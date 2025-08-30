@@ -1,9 +1,9 @@
 package fxutils.prompt
 
-import javafx.scene.control.TextField
 import fxutils.styleClass
+import javafx.scene.control.TextField
 
-abstract class TextPrompt<R : Any>(final override val title: String, initialText: String) : Prompt<R?, TextField>() {
+abstract class TextPrompt<R : Any>(final override val title: String, initialText: String) : Prompt<R?>() {
     protected abstract fun convert(text: String): R?
 
     final override val content: TextField = TextField(initialText).styleClass("prompt", "prompt-text-field")

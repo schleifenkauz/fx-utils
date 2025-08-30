@@ -2,13 +2,9 @@ package fxutils.prompt
 
 import fxutils.button
 import fxutils.registerShortcuts
-import fxutils.styleClass
-import javafx.scene.Parent
 import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.layout.HBox
 
-class InfoPrompt(private val text: String) : Prompt<Unit, Button>() {
+class InfoPrompt(private val text: String) : Prompt<Unit>() {
     private val okButton = button("Ok") { commit(Unit) }
 
     override val title: String
@@ -27,11 +23,6 @@ class InfoPrompt(private val text: String) : Prompt<Unit, Button>() {
     override fun onReceiveFocus() {
         okButton.requestFocus()
     }
-
-    override fun createLayout(): Parent = HBox(
-        Label(title) styleClass "dialog-title",
-        content
-    ) styleClass "dialog-box"
 
     override fun getDefault() = Unit
 }
