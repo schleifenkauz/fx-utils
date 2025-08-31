@@ -11,13 +11,14 @@ class PropertySelectorButton<E : Any>(
     prompt: SelectorPrompt<E>, defaultValue: E,
 ) : SelectorButton<E>(prompt, defaultValue) {
     init {
-        update(property.get())
+        text = displayText(property.get()).escapeUnderscores()
     }
 
     override fun getCurrent(): E = property.get()
 
-    override fun update(option: E) {
-        text = displayText(option).escapeUnderscores()
+    public override fun update(option: E) {
+        property.set(option)
+        text = displayText(property.get()).escapeUnderscores()
     }
 
     override fun createEdit(oldValue: E, newValue: E, actionDescription: String): Edit =
