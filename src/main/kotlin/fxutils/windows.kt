@@ -4,6 +4,7 @@ import javafx.event.Event
 import javafx.geometry.Point2D
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.Scene
 import javafx.scene.control.Dialog
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
@@ -95,6 +96,14 @@ fun Event?.popupAnchor(): Point2D = when {
 
     else -> Screen.getPrimary().visualBounds.middlePoint()
 }
+
+val Event?.sourceWindow: Window?
+    get() = when (val src = this?.source) {
+        is Window -> src
+        is Scene -> src.window
+        is Node -> src.scene.window
+        else -> null
+    }
 
 fun Node.showAsPopup(ev: Event? = null) {
     val popup = asPopup()
