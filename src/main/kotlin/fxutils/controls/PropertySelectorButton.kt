@@ -10,6 +10,10 @@ class PropertySelectorButton<E : Any>(
     private val property: KMutableProperty0<E>,
     prompt: SelectorPrompt<E>, defaultValue: E,
 ) : SelectorButton<E>(prompt, defaultValue) {
+    init {
+        update(property.get())
+    }
+
     override fun getCurrent(): E = property.get()
 
     override fun update(option: E) {
