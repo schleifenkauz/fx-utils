@@ -16,9 +16,10 @@ fun <C : Any> collectActions(body: Action.Collector<C>.() -> Unit): Action.Colle
 fun KeyEventHandlerBody<*>.registerActions(actions: List<ContextualizedAction>) {
     for (action in actions) {
         for (shortcut in action.shortcuts) {
-            on(shortcut) { ev ->
+            on(shortcut, consume = false) { ev ->
                 if (action.isApplicable.now) {
                     action.execute(ev)
+                    ev.consume()
                 }
             }
         }

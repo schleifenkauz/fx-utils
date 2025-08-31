@@ -272,7 +272,7 @@ inline fun Scene.registerShortcuts(
     eventType: EventType<KeyEvent> = KeyEvent.KEY_RELEASED,
     crossinline handle: KeyEventHandlerBody<Unit>.() -> Unit,
 ) {
-    addEventFilter(eventType) { ev: KeyEvent ->
+    addEventHandler(eventType) { ev: KeyEvent ->
         KeyEventHandlerBody(Unit, ev).handle()
     }
 }
