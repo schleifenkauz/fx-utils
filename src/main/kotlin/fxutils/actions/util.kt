@@ -24,7 +24,10 @@ fun Event?.isShiftDown() = (this is KeyEvent && isShiftDown) || (this is MouseEv
 fun Event?.isAltDown() = (this is KeyEvent && isAltDown) || (this is MouseEvent && isAltDown)
 fun Event?.isControlDown() = (this is KeyEvent && isControlDown) || (this is MouseEvent && isControlDown)
 val Event?.isTargetTextInput
-    get() = this is KeyEvent && (target is TextInputControl || target is Spinner<*> || target is TextArea)
+    get() = this is KeyEvent && (
+            target is TextInputControl || target is Spinner<*> || target is TextArea ||
+                    target.javaClass.simpleName == "WebView"
+            )
 
 internal fun buttonSize(style: String) = when (style) {
     "small-icon-button" -> 16.0

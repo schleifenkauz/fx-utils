@@ -4,6 +4,7 @@
 
 package fxutils
 
+import javafx.application.Platform
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -14,7 +15,7 @@ import javafx.scene.control.TextField
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import reaktive.value.ReactiveValue
-import reaktive.value.fx.asObservableValue
+import reaktive.value.forEach
 
 fun String.escapeUnderscores() = replace("_", "__")
 
@@ -32,7 +33,11 @@ inline fun label(text: String = "", graphic: Node? = null, block: Label.() -> Un
 
 fun label(text: ReactiveValue<String>): Label {
     val label = Label()
-    label.textProperty().bind(text.asObservableValue())
+    label.userData = text.forEach { str ->
+        Platform.runLater {
+            label.text = str
+        }
+    }
     return label
 }
 
