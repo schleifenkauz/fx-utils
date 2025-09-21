@@ -7,8 +7,10 @@ import fxutils.setRoot
 import fxutils.styleClass
 import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
+import javafx.css.PseudoClass
 import javafx.scene.control.Control
 import javafx.scene.control.TextField
+import javafx.scene.control.skin.TextFieldSkin
 import javafx.scene.layout.HBox
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import reaktive.Observer
@@ -20,7 +22,7 @@ import reaktive.value.fx.asObservableValue
 import reaktive.value.fx.asReactiveValue
 import reaktive.value.now
 
-abstract class AbstractSpinner<T: Comparable<T>>(
+abstract class AbstractSpinner<T : Comparable<T>>(
     val value: ReactiveVariable<T>, private val min: T, private val max: T
 ) : Control() {
     private var undoManager: UndoManager? = null
@@ -44,6 +46,7 @@ abstract class AbstractSpinner<T: Comparable<T>>(
         valueObserver = value.forEach { v ->
             valueInput.text = toString(v)
         }
+        valueInput.skin = ValueInputSkin()
         valueInput.autoSize(minColumns = this::minColumns)
         valueInput.editableProperty().bind(disabledProperty().not())
         btnDecrement.disableProperty().bind(
@@ -101,6 +104,13 @@ abstract class AbstractSpinner<T: Comparable<T>>(
         }
     }
 
+    private fun updatedText(text: String) {
+        val value = parseValue(text)
+        valueInput.style =
+            if (value != null) "-fx-text-fill: green"
+            else "-fx-text-fill: red"
+    }
+
     private fun updateValueFromTextInput() {
         val newValue = parseValue(valueInput.text)?.coerceIn(min, max)
         if (newValue != null) {
@@ -108,6 +118,7 @@ abstract class AbstractSpinner<T: Comparable<T>>(
         }
         valueInput.text = value.now.toString()
         onUserInput(value.now)
+        valueInput.style = ""
     }
 
     private fun updateValue(newValue: T, actionDescription: String) {
@@ -117,6 +128,18 @@ abstract class AbstractSpinner<T: Comparable<T>>(
 
     override fun requestFocus() {
         valueInput.requestFocus()
+    }
+
+    private inner class ValueInputSkin : TextFieldSkin(valueInput) {
+        override fun replaceText(start: Int, end: Int, text: String) {
+            super.replaceText(start, end, text)
+            updatedText(valueInput.text)
+        }
+
+        override fun deleteChar(previous: Boolean) {
+            super.deleteChar(previous)
+            updatedText(valueInput.text)
+        }
     }
 
     companion object {
@@ -130,5 +153,8 @@ abstract class AbstractSpinner<T: Comparable<T>>(
             shortcut("Ctrl+MINUS")
             executes { spinner -> spinner.decrement() }
         }
+
+        private val CHANGED_TEXT = PseudoClass.getPseudoClass("changed_text")
+        private val INVALID = PseudoClass.getPseudoClass("invalid")
     }
 }

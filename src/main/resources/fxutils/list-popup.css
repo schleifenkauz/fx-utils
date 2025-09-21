@@ -21,3 +21,8 @@
     -fx-text-fill: white;
     -fx-font-size: 11px;
 }
+
+.shortcut-label {
+    -fx-text-fill: grey;
+    -fx-font-size: 11px;
+}
