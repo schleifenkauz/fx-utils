@@ -5,6 +5,7 @@ import javafx.event.EventType
 import javafx.geometry.BoundingBox
 import javafx.geometry.Bounds
 import javafx.geometry.Point2D
+import javafx.geometry.Rectangle2D
 import javafx.scene.Cursor
 import javafx.scene.Node
 import javafx.scene.input.DragEvent
@@ -66,7 +67,7 @@ fun Node.setupDragging(
 fun Region.setupDraggingAndResizing(
     canUserChangeWidth: Boolean, canUserChangeHeight: Boolean, threshold: Double,
     drag: (x: Double, y: Double) -> Unit,
-    resize: (Bounds, Double, Double, Cursor, MouseEvent) -> Unit,
+    resize: (MouseEvent, Cursor, Rectangle2D) -> Unit,
     startDrag: (MouseEvent, Cursor) -> Boolean = { _, _ -> true },
     finishDrag: (MouseEvent, Cursor) -> Unit = { _, _ -> },
 ) {
@@ -88,11 +89,22 @@ fun Region.setupDraggingAndResizing(
                 val start = dragStart ?: return@addEventHandler
                 val dx = ev.screenX - start.x
                 val dy = ev.screenY - start.y
+                val b = oldBounds!!
                 if (isResizeCursor(cursor)) {
-                    resize(oldBounds!!, dx, dy, cursor, ev)
+                    val (x, w) = when (cursor) {
+                        Cursor.E_RESIZE, Cursor.NE_RESIZE, Cursor.SE_RESIZE -> Pair(b.minX, b.width + dx)
+                        Cursor.W_RESIZE, Cursor.NW_RESIZE, Cursor.SW_RESIZE -> Pair(b.minX + dx, b.width - dx)
+                        else -> Pair(b.minX, b.width)
+                    }
+                    val (y, h) = when (cursor) {
+                        Cursor.S_RESIZE, Cursor.SE_RESIZE, Cursor.SW_RESIZE -> Pair(b.minY, b.height + dy)
+                        Cursor.N_RESIZE, Cursor.NE_RESIZE, Cursor.NW_RESIZE -> Pair(b.minY + dy, b.height - dy)
+                        else -> Pair(b.minY, b.height)
+                    }
+                    resize(ev, cursor, Rectangle2D(x, y, w, h))
                 } else {
-                    val x = oldBounds!!.minX + dx
-                    val y = oldBounds!!.minY + dy
+                    val x = b.minX + dx
+                    val y = b.minY + dy
                     drag(x, y)
                 }
             }
@@ -125,8 +137,6 @@ private fun Region.getCursor(
     val dx = (x - prefWidth).absoluteValue
     val dy = (y - prefHeight).absoluteValue
     return when {
-        ev.modifiers.isEmpty() -> if (closeHand) Cursor.CLOSED_HAND else Cursor.OPEN_HAND
-        !ev.isControlDown && !ev.isAltDown -> if (closeHand) cursor else Cursor.DEFAULT
         x.absoluteValue < threshold && y.absoluteValue < threshold && canUserChangeHeight && canUserChangeWidth -> Cursor.NW_RESIZE
         x.absoluteValue < threshold && dy.absoluteValue < threshold && canUserChangeHeight && canUserChangeWidth -> Cursor.SW_RESIZE
         dx < threshold && y.absoluteValue < threshold && canUserChangeHeight && canUserChangeWidth -> Cursor.NE_RESIZE
