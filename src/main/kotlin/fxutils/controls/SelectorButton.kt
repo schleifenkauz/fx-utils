@@ -4,7 +4,10 @@ import fxutils.prompt.SelectorPrompt
 import fxutils.undo.Edit
 import fxutils.undo.UndoManager
 import javafx.scene.control.Button
+import javafx.scene.control.ContentDisplay
 import javafx.scene.input.MouseButton
+import org.kordamp.ikonli.javafx.FontIcon
+import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 
 abstract class SelectorButton<E : Any>(
     protected val prompt: SelectorPrompt<E>,
@@ -20,6 +23,8 @@ abstract class SelectorButton<E : Any>(
 
     init {
         styleClass.add("selector-button")
+        graphic = FontIcon(MaterialDesignC.CHEVRON_DOWN)
+        contentDisplay = ContentDisplay.RIGHT
         showPopupOnClick()
     }
 

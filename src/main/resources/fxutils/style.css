@@ -22,10 +22,10 @@
 
 Label.menu-item-description {
     -fx-text-fill: white;
-    -fx-font-size: 12px;
+    -fx-font-size: 11px;
 }
 
 Label.shortcut-info {
     -fx-text-fill: gray;
-    -fx-font-size: 12px;
+    -fx-font-size: 11px;
 }

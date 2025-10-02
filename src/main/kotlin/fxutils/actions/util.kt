@@ -109,9 +109,10 @@ fun contextMenu(actions: List<ContextualizedAction>): ContextMenu {
         val shortcutLabel = label(action.shortcuts.firstOrNull()?.toString().orEmpty())
         shortcutLabel.styleClass("shortcut-info")
         val icon = FontIcon()
+        icon.iconSize = 14
         icon.iconCodeProperty().bind(action.icon.map { it ?: MaterialDesignA.ARROW_RIGHT }.asObservableValue())
         icon.visibleProperty().bind(action.icon.notNull().asObservableValue())
-        val layout = HBox(icon, descriptionLabel, hspace(25.0).alwaysHGrow(), shortcutLabel)
+        val layout = HBox(5.0, icon, descriptionLabel, hspace(25.0).alwaysHGrow(), shortcutLabel)
             .styleClass("menu-item-layout")
         val item = CustomMenuItem(layout)
         item.disableProperty().bind(action.isApplicable.not().asObservableValue())

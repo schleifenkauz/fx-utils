@@ -1,4 +1,4 @@
-.button.sleek-button, .button.selector-button {
+.button.sleek-button {
     -fx-background-color: black !important;
     -fx-border-color: rgba(128, 128, 128, 0.3) !important;
 }
@@ -13,12 +13,14 @@
 .button.selector-button {
     -fx-padding: 2px !important;
     -fx-border-width: 1px;
-    -fx-background-radius: 2px !important;
-    -fx-border-radius: 2px !important;
+    -fx-border-color: green;
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px !important;
+    -fx-border-radius: 4px !important;
 }
 
 .button.sleek-button:hover, .button.selector-button:hover {
-    -fx-background-color: #351919 !important;
+    -fx-background-color: rgba(0, 128, 0, 0.15) !important;
 }
 
 .button.sleek-button:focused, .button.selector-button:focused {

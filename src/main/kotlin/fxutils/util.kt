@@ -31,6 +31,8 @@ import javafx.scene.robot.Robot
 import javafx.scene.shape.Rectangle
 import javafx.stage.Window
 import org.controlsfx.control.ToggleSwitch
+import org.kordamp.ikonli.javafx.FontIcon
+import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import reaktive.Observer
 import reaktive.value.*
 import reaktive.value.binding.map
@@ -211,6 +213,18 @@ fun button(text: ReactiveString, style: String = "sleek-button", onAction: (Acti
 fun button(text: String = "", style: String = "sleek-button", onAction: (ev: ActionEvent) -> Unit = {}) =
     Button(text.escapeUnderscores()).styleClass(style).also { btn -> btn.setOnAction(onAction) }
 
+fun selectorButton(text: ReactiveString, onAction: (ActionEvent) -> Unit = {}) =
+    button(text, style = "selector-button", onAction).apply {
+        graphic = FontIcon(MaterialDesignC.CHEVRON_DOWN)
+        contentDisplay = ContentDisplay.RIGHT
+    }
+
+fun selectorButton(text: String = "", onAction: (ActionEvent) -> Unit = {}) =
+    button(text, style = "selector-button", onAction).apply {
+        graphic = FontIcon(MaterialDesignC.CHEVRON_DOWN)
+        contentDisplay = ContentDisplay.RIGHT
+    }
+
 fun <T, F> ObservableValue<out T>.map(f: (T) -> F): ObservableValue<F> =
     Bindings.createObjectBinding({ f(value) }, this)
 
@@ -226,7 +240,7 @@ fun <N : Region> N.alwaysHGrow() = also {
 fun <N : Node> N.neverHGrow() = also { HBox.setHgrow(it, Priority.NEVER) }
 
 fun <N : Node> N.alwaysVGrow() = also { VBox.setVgrow(it, Priority.ALWAYS) }
-fun <N: Node> N.neverVGrow() = also { VBox.setVgrow(it, Priority.NEVER) }
+fun <N : Node> N.neverVGrow() = also { VBox.setVgrow(it, Priority.NEVER) }
 
 fun hspace(width: Double) = Region().apply { prefWidth = width }
 fun vspace(height: Double) = Region().apply { prefHeight = height }
