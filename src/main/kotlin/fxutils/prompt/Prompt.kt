@@ -31,7 +31,7 @@ abstract class Prompt<R> {
     protected var ownerWindow: Window? = null
         private set
 
-    protected abstract val content: Node
+    abstract val content: Node
 
     protected abstract val title: String
 

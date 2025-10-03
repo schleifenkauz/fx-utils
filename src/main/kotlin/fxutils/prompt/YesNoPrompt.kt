@@ -1,5 +1,6 @@
 package fxutils.prompt
 
+import fxutils.SubWindow
 import fxutils.button
 import fxutils.registerShortcuts
 import fxutils.styleClass
@@ -16,6 +17,9 @@ class YesNoPrompt(
     override val content = HBox(btnNo, btnYes) styleClass "buttons-bar"
     override val title: String
         get() = question
+
+    override val windowType: SubWindow.Type
+        get() = SubWindow.Type.Undecorated
 
     init {
         if (cancellable) content.children.add(0, btnCancel)

@@ -459,3 +459,21 @@ fun ScrollPane.neverSquish() = apply {
     neverSquishHorizontally()
     neverSquishVertically()
 }
+
+fun GridPane.removeRow(index: Int) {
+    val itr = children.listIterator()
+    for (node in itr) {
+        if (GridPane.getRowIndex(node) == index) {
+            itr.remove()
+        }
+    }
+}
+
+fun GridPane.removeColumn(index: Int) {
+    val itr = children.listIterator()
+    for (node in itr) {
+        if (GridPane.getColumnIndex(node) == index) {
+            itr.remove()
+        }
+    }
+}

@@ -30,11 +30,13 @@ abstract class ConfirmablePrompt<R : Any>(
 
     protected open fun extraButtons(): List<Button> = emptyList()
 
+    protected open fun buttons(): List<Button> = listOf(cancelButton, confirmButton) + extraButtons()
+
     override fun createLayout(): Parent {
         val layout = super.createLayout() as VBox
-        val buttons = HBox(cancelButton, confirmButton) styleClass "buttons-bar"
-        buttons.children.addAll(extraButtons())
-        layout.children.add(buttons)
+        val buttonsBar = HBox() styleClass "buttons-bar"
+        buttonsBar.children.addAll(buttons())
+        layout.children.add(buttonsBar)
         layout.registerShortcuts {
             on("Ctrl+Enter") {
                 commit(confirm())

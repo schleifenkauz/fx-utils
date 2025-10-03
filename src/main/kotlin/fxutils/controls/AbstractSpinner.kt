@@ -23,7 +23,7 @@ import reaktive.value.fx.asReactiveValue
 import reaktive.value.now
 
 abstract class AbstractSpinner<T : Comparable<T>>(
-    val value: ReactiveVariable<T>, private val min: T, private val max: T
+    val value: ReactiveVariable<T>, private var min: T, private var max: T
 ) : Control() {
     private var undoManager: UndoManager? = null
     private var variableDescription: String? = null
@@ -63,6 +63,25 @@ abstract class AbstractSpinner<T : Comparable<T>>(
     protected abstract fun decrement(value: T): T
     protected abstract fun parseValue(text: String): T?
     protected open fun toString(value: T): String = value.toString()
+
+    fun setMin(v: T) {
+        min = v
+        if (value.now < min) {
+            value.now = min
+        }
+    }
+
+    fun setMax(v: T) {
+        max = v
+        if (value.now > max) {
+            value.now = max
+        }
+    }
+
+    fun setRange(range: ClosedRange<T>) {
+        setMin(range.start)
+        setMax(range.endInclusive)
+    }
 
     fun setupUndo(variableDescription: String?, manager: UndoManager?) = also {
         undoManager = manager

@@ -1,9 +1,6 @@
-.button.sleek-button {
+Button.sleek-button, ToggleButton.sleek-button {
     -fx-background-color: black !important;
     -fx-border-color: rgba(128, 128, 128, 0.3) !important;
-}
-
-.button.sleek-button {
     -fx-padding: 3px !important;
     -fx-border-width: 2px;
     -fx-background-radius: 5px !important;
@@ -19,10 +16,10 @@
     -fx-border-radius: 4px !important;
 }
 
-.button.sleek-button:hover, .button.selector-button:hover {
+Button.sleek-button:hover, Button.selector-button:hover {
     -fx-background-color: rgba(0, 128, 0, 0.15) !important;
 }
 
-.button.sleek-button:focused, .button.selector-button:focused {
+Button.sleek-button:focused, Button.selector-button:focused {
     -fx-border-color: #501717 !important;
 }
