@@ -13,6 +13,7 @@ import javafx.animation.AnimationTimer
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableNumberValue
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
@@ -38,6 +39,7 @@ import reaktive.value.*
 import reaktive.value.binding.map
 import reaktive.value.fx.asObservableValue
 import reaktive.value.fx.asProperty
+import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
@@ -63,7 +65,6 @@ fun Control.setRoot(node: Node) {
 }
 
 fun skin(control: Control, node: Node): Skin<Control> = SimpleSkin(control, node)
-
 
 private class SimpleSkin(
     private val control: Control, private val node: Node,
@@ -141,7 +142,6 @@ fun <C : Control> C.withTooltip(text: String) = withTooltip(Tooltip(text))
 
 fun hextantLabel(text: String, graphic: Node? = null) = Label(text, graphic).withStyleClass("hextant-text")
 
-
 fun Dialog<*>.setDefaultButton(type: ButtonType) {
     for (tp in dialogPane.buttonTypes) {
         val button = dialogPane.lookupButton(tp) as Button
@@ -187,7 +187,6 @@ fun <T> Future<T>.awaitFx(action: (T) -> Unit) {
         Platform.runLater { action(value) }
     }
 }
-
 
 operator fun Point2D.plus(other: Point2D) = Point2D(x + other.x, y + other.y)
 
@@ -326,6 +325,22 @@ fun Node.bindPseudoClassState(name: String, active: ReactiveBoolean): Observer {
     return active.forEach { state ->
         pseudoClassStateChanged(pseudoClass, state)
     }
+}
+
+fun Node.bindPseudoClassState(name: String, active: ObservableValue<Boolean>) {
+    val pseudoClass = PseudoClass.getPseudoClass(name)
+    pseudoClassStateChanged(pseudoClass, active.value)
+    val weak = WeakReference(this)
+    lateinit var listener: ChangeListener<Boolean>
+    listener = ChangeListener { _, _, v ->
+        val node = weak.get()
+        if (node != null) {
+            node.pseudoClassStateChanged(pseudoClass, v)
+        } else {
+            active.removeListener(listener)
+        }
+    }
+    active.addListener(listener)
 }
 
 fun <T> runOnApplicationThread(action: () -> T): T {
