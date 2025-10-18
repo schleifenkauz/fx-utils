@@ -7,6 +7,9 @@ class IntSpinner(
     value: ReactiveVariable<Int>,
     min: Int, max: Int, private val step: Int = 1,
 ) : AbstractSpinner<Int>(value, min, max) {
+    init {
+        bind()
+    }
 
     override fun increment(value: Int): Int = value + step
 

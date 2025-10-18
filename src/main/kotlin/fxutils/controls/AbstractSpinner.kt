@@ -27,7 +27,7 @@ abstract class AbstractSpinner<T : Comparable<T>>(
 ) : Control() {
     private var undoManager: UndoManager? = null
     private var variableDescription: String? = null
-    private val valueObserver: Observer
+    private lateinit var valueObserver: Observer
     private val valueInput: TextField = TextField()
     private val btnDecrement = decrementAction.withContext(this).makeButton("small-icon-button")
     private val btnIncrement = incrementAction.withContext(this).makeButton("small-icon-button")
@@ -37,15 +37,6 @@ abstract class AbstractSpinner<T : Comparable<T>>(
     init {
         setRoot(HBox(btnDecrement, valueInput, btnIncrement) styleClass "spinner")
         isFocusTraversable = false
-        valueInput.focusedProperty().addListener { _, _, focused ->
-            if (!focused) {
-                updateValueFromTextInput()
-            }
-        }
-        valueInput.setOnAction { updateValueFromTextInput() }
-        valueObserver = value.forEach { v ->
-            valueInput.text = toString(v)
-        }
         valueInput.skin = ValueInputSkin()
         valueInput.autoSize(minColumns = this::minColumns)
         valueInput.editableProperty().bind(disabledProperty().not())
@@ -55,6 +46,18 @@ abstract class AbstractSpinner<T : Comparable<T>>(
         btnIncrement.disableProperty().bind(
             value.equalTo(max).or(disabledProperty().asReactiveValue()).asObservableValue()
         )
+    }
+
+    protected fun bind() {
+        valueInput.focusedProperty().addListener { _, _, focused ->
+            if (!focused) {
+                updateValueFromTextInput()
+            }
+        }
+        valueInput.setOnAction { updateValueFromTextInput() }
+        valueObserver = value.forEach { v ->
+            valueInput.text = toString(v)
+        }
     }
 
     fun value(): T = value.now
