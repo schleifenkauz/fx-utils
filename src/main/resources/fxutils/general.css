@@ -20,6 +20,10 @@
     -fx-icon-color: -fx-accent;
 }
 
+TextField:dirty {
+    -fx-text-fill: green;
+}
+
 /*
 * Scroll Pane
 */
