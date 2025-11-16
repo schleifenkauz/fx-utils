@@ -168,15 +168,12 @@ abstract class AbstractSpinner<T : Comparable<T>>(
         private val incrementAction = action<AbstractSpinner<*>>("Increment") {
             icon(MaterialDesignC.CHEVRON_RIGHT)
             shortcut("Ctrl+PLUS")
-            executes { spinner -> spinner.increment() }
+            executes(AbstractSpinner<*>::increment)
         }
         private val decrementAction = action<AbstractSpinner<*>>("Decrement") {
             icon(MaterialDesignC.CHEVRON_LEFT)
             shortcut("Ctrl+MINUS")
-            executes { spinner -> spinner.decrement() }
+            executes(AbstractSpinner<*>::decrement)
         }
-
-        private val CHANGED_TEXT = PseudoClass.getPseudoClass("changed_text")
-        private val INVALID = PseudoClass.getPseudoClass("invalid")
     }
 }

@@ -202,6 +202,10 @@ fun Node.setupDropArea(dropHandler: DropHandler) {
     }
 }
 
+fun Node.setupDropArea(configure: ConfiguredDropHandler.() -> Unit) {
+    setupDropArea(ConfiguredDropHandler(configure))
+}
+
 fun Dragboard.hasFiles(vararg extensions: String) =
     hasFiles() && files.all { f -> f.extension in extensions }
 
