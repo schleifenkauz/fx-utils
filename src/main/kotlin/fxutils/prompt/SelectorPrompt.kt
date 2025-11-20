@@ -29,16 +29,16 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
     private val scrollPane = ScrollPane(layout)
     final override val content: VBox = VBox(searchText, scrollPane) styleClass "selector-prompt"
 
-    private val optionBoxes = mutableMapOf<E, Region>()
+    private val optionBoxes = mutableMapOf<Option<E>, Region>()
     private var filteredOptions: List<E> = emptyList()
-    var selectedOption: E? = null
+    protected var selectedOption: Option<E> = Option.None
         private set
 
     private var initialOption: E? = null //TODO is this needed
 
     private var filter: (E) -> Boolean = { true }
 
-    private var result: E? = null
+    protected open val canCreateItem: Boolean get() = false
 
     protected abstract fun options(): List<E>
 
@@ -81,7 +81,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
         return this
     }
 
-    protected fun getBox(option: E) = optionBoxes[option]
+    protected fun getBox(option: E) = optionBoxes[Option.SelectItem(option)]
 
     protected open fun makeOption(text: String): E? = null
 
@@ -107,7 +107,16 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
             box.setOnMouseClicked {
                 commit(option)
             }
-            optionBoxes[option] = box
+            optionBoxes[Option.SelectItem(option)] = box
+        }
+        if (canCreateItem) {
+            val label = Label().styleClass("option-label")
+            label.textProperty().bind(searchText.textProperty().map { "Create '$it'" })
+            val box = HBox(label).styleClass("option-cell")
+            box.setOnMouseClicked {
+                confirmText(searchText.text)
+            }
+            optionBoxes[Option.CreateItem] = box
         }
     }
 
@@ -117,11 +126,19 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
         filteredOptions = options().filter { option ->
             extractText(option).contains(searchText.text, ignoreCase = true) && filter(option)
         }
-        select(filteredOptions.firstOrNull())
         for (option in filteredOptions) {
-            val box = optionBoxes.getValue(option)
+            val box = optionBoxes.getValue(Option.SelectItem(option))
             layout.children.add(box)
         }
+        if (canCreateItem && searchText.text.isNotBlank() && searchText.text !in filteredOptions.map(::extractText)) {
+            val box = optionBoxes.getValue(Option.CreateItem)
+            layout.children.add(box)
+        }
+        select(
+            filteredOptions.firstOrNull()?.let(Option<*>::SelectItem)
+                ?: Option.CreateItem.takeIf { canCreateItem }
+                ?: Option.None
+        )
         if (_window != null) window.sizeToScene()
     }
 
@@ -130,24 +147,28 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
             when {
                 "Shift?+TAB".shortcut.matches(ev) -> {
                     val deltaIdx = if (ev.isShiftDown) -1 else +1
-                    val selectedIndex = filteredOptions.indexOf(selectedOption)
+                    val selectedIndex = when (val option = selectedOption) {
+                        Option.None -> -1
+                        is Option.SelectItem -> filteredOptions.indexOf(option.obj)
+                        Option.CreateItem -> filteredOptions.size
+                    }
                     if (selectedIndex + deltaIdx in filteredOptions.indices) {
                         select(filteredOptions[selectedIndex + deltaIdx])
+                    } else if (selectedIndex + deltaIdx == filteredOptions.size) {
+                        select(Option.CreateItem)
                     }
                     ev.consume()
                 }
 
                 "Enter".shortcut.matches(ev) -> {
-                    if (selectedOption != null) {
-                        commit(selectedOption!!)
-                    }
-                    else confirmText(searchText.text)
+                    if (selectedOption != Option.None) {
+                        commit(selectedOption)
+                    } else confirmText(searchText.text)
                     ev.consume()
                 }
 
                 "Ctrl+Enter".shortcut.matches(ev) -> {
-                    val text = searchText.text.takeIf { it.isNotBlank() }
-                        ?: selectedOption?.let { extractText(it) } ?: return@addEventFilter
+                    val text = searchText.text.takeIf { it.isNotBlank() } ?: return@addEventFilter
                     confirmText(text)
                     ev.consume()
                 }
@@ -155,10 +176,26 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
         }
     }
 
-    fun select(option: E?) {
+    private fun commit(option: Option<E>) {
+        when (option) {
+            Option.None -> return
+            is Option.SelectItem -> commit(option.obj)
+            is Option.CreateItem -> {
+                val text = searchText.text.takeIf { it.isNotBlank() } ?: return
+                val newOption = makeOption(text) ?: return
+                commit(newOption)
+            }
+        }
+    }
+
+    private fun select(option: Option<E>) {
         optionBoxes[selectedOption]?.pseudoClassStateChanged(SELECTED, false)
         selectedOption = option
-        optionBoxes[selectedOption]?.pseudoClassStateChanged(SELECTED, true)
+        optionBoxes[option]?.pseudoClassStateChanged(SELECTED, true)
+    }
+
+    fun select(option: E?) {
+        select(if (option == null) Option.None else Option.SelectItem(option))
     }
 
     private fun confirmText(text: String) {
@@ -221,4 +258,10 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
         .onUpdate(onUpdate)
         .displayText(displayText)
         .withUndo(undoManager, actionDescription)
+
+    protected sealed class Option<out E> {
+        data object None : Option<Nothing>()
+        data class SelectItem<E>(val obj: E) : Option<E>()
+        data object CreateItem : Option<Nothing>()
+    }
 }
