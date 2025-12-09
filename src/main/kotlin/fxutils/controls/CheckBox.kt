@@ -1,10 +1,9 @@
 package fxutils.controls
 
-import fxutils.label
-import fxutils.setRoot
-import fxutils.styleClass
+import fxutils.*
 import fxutils.undo.ToggleEdit
 import fxutils.undo.UndoManager
+import javafx.geometry.Pos
 import javafx.scene.control.Control
 import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
@@ -38,6 +37,8 @@ class CheckBox(
         label.visibleProperty().bind(text.map { t -> t.isNotEmpty() }.asObservableValue())
         label.managedProperty().bind(label.visibleProperty())
         val boxPane = StackPane(mark, box) styleClass "check-box-alt"
+        label.prefHeightProperty().bind(boxPane.heightProperty())
+        label.alignment = Pos.CENTER_LEFT
         val layout = HBox(label, boxPane)
         setRoot(layout)
         valueObserver = state.forEach { v -> displayState(v) }

@@ -35,7 +35,11 @@ class OptionSpinner<E : Any>(
     val label = Label() styleClass "option-spinner-label"
 
     init {
-        require(selectedIndex.now != -1) { "Initial option not found in options" }
+        require(options.isNotEmpty()) { "Options list cannot be empty" }
+        if (selectedIndex.now == -1) {
+            System.err.println("Selected option ${selectedOption.now} not found in options list $options")
+            selectedIndex.set(0)
+        }
         btnDecrement.disableProperty().bind(selectedIndex.equalTo(0).asObservableValue())
         btnIncrement.disableProperty().bind(selectedIndex.equalTo(options.lastIndex).asObservableValue())
         setRoot(HBox(btnDecrement, label, btnIncrement) styleClass "option-spinner")
