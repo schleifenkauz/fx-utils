@@ -10,11 +10,14 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.Labeled
+import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import reaktive.value.ReactiveValue
+import reaktive.value.ReactiveVariable
 import reaktive.value.fx.asObservableValue
+import reaktive.value.fx.asProperty
 
 fun String.escapeUnderscores() = replace("_", "__")
 
@@ -34,6 +37,12 @@ fun label(text: ReactiveValue<String>): Label {
     val label = Label()
     label.textProperty().bind(text.asObservableValue())
     return label
+}
+
+fun textArea(text: ReactiveVariable<String>): TextArea {
+    val area = TextArea()
+    area.textProperty().bindBidirectional(text.asProperty())
+    return area
 }
 
 /**

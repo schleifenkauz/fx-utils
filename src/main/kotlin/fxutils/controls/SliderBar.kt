@@ -3,8 +3,8 @@ package fxutils.controls
 import fxutils.label
 import fxutils.prompt.TextPrompt
 import fxutils.registerShortcuts
+import fxutils.runAfterLayout
 import fxutils.styleClass
-import fxutils.undo.NoUndoManager
 import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
 import javafx.application.Platform
@@ -36,7 +36,6 @@ class SliderBar<T : Any>(
     private val nameLabel = label(name)
     private val valueLabel = Label()
 
-    //TODO is this needed or is the prompt sufficient?
     private val valueInput = TextField() styleClass "sleek-text-field"
     private val valueObserver: Observer
 
@@ -93,13 +92,23 @@ class SliderBar<T : Any>(
                 MouseEvent.MOUSE_EXITED -> showName()
                 MouseEvent.MOUSE_CLICKED -> {
                     if (ev.button == MouseButton.SECONDARY) {
-                        val v = Prompt().showDialog(anchorNode = this) ?: return@addEventHandler
-                        updateValue(v)
+                        showTextFieldInput()
+//                        val v = Prompt().showDialog(anchorNode = this) ?: return@addEventHandler
+//                        updateValue(v)
                     } else {
                         showValue()
                     }
                 }
             }
+        }
+    }
+
+    private fun showTextFieldInput() {
+        valueInput.text = converter.toString(value.now)
+        setActiveControl(valueInput)
+        runAfterLayout {
+            valueInput.requestFocus()
+            valueInput.selectAll()
         }
     }
 
