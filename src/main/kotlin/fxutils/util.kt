@@ -30,6 +30,7 @@ import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.robot.Robot
 import javafx.scene.shape.Rectangle
+import javafx.scene.text.Text
 import javafx.stage.Window
 import org.controlsfx.control.ToggleSwitch
 import org.kordamp.ikonli.javafx.FontIcon
@@ -491,4 +492,21 @@ fun GridPane.removeColumn(index: Int) {
             itr.remove()
         }
     }
+}
+
+inline fun <reified T: Node> Node.getParent(): T? {
+    var parent = parent
+    while (parent != null && parent !is T) {
+        parent = parent.parent
+    }
+    return parent as? T
+}
+
+fun makeVerticalLabel(nameLabel: Text): StackPane {
+    nameLabel.fill = Color.WHITE
+    nameLabel.rotate = -90.0
+    StackPane.setAlignment(nameLabel, Pos.BOTTOM_CENTER)
+    val namePane = StackPane(nameLabel).setFixedWidth(15.0)
+    nameLabel.translateYProperty().bind(nameLabel.textProperty().map { -nameLabel.prefWidth(-1.0) / 2 })
+    return namePane
 }

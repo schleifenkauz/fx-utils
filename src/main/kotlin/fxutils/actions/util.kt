@@ -31,7 +31,7 @@ val Event?.isTargetTextInput
 
 internal fun buttonSize(style: String) = when (style) {
     "small-icon-button" -> 16.0
-    "medium-icon-button", "mute-solo-button" -> 24.0
+    "medium-icon-button", "mute-solo-button" -> 20.0
     "large-icon-button" -> 32.0
     else -> throw AssertionError("Unknown icon button style: $style")
 }
