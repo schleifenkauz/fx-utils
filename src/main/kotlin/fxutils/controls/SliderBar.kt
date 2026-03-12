@@ -99,7 +99,9 @@ class SliderBar<T : Any>(
                         showValue()
                     }
                 }
+                else -> return@addEventHandler
             }
+            ev.consume()
         }
     }
 
