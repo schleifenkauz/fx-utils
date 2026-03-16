@@ -8,12 +8,12 @@ Button.sleek-button, ToggleButton.sleek-button {
 }
 
 .button.selector-button {
-    -fx-padding: 2px !important;
+    -fx-padding: 1px !important;
     -fx-border-width: 1px;
     -fx-border-color: green;
     -fx-background-color: transparent;
-    -fx-background-radius: 4px !important;
-    -fx-border-radius: 4px !important;
+    -fx-background-radius: 3px !important;
+    -fx-border-radius: 3px !important;
 }
 
 Button.sleek-button:hover, Button.selector-button:hover {

@@ -3,6 +3,15 @@
 */
 .slider-bar > ProgressBar > .bar {
     -fx-background-insets: 0;
+    -fx-pref-height: 16px;
+}
+
+.slider-bar-input .selection {
+    -fx-background-color: black;
+}
+
+.slider-bar Label, .slider-bar TextField {
+    -fx-font-size: 11px;
 }
 
 /*

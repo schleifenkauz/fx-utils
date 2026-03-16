@@ -1,14 +1,15 @@
 package fxutils.controls
 
 import fxutils.label
-import fxutils.prompt.TextPrompt
 import fxutils.registerShortcuts
 import fxutils.runAfterLayout
 import fxutils.styleClass
 import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
 import javafx.application.Platform
+import javafx.geometry.Point2D
 import javafx.geometry.Pos
+import javafx.scene.Cursor
 import javafx.scene.Node
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressBar
@@ -16,6 +17,7 @@ import javafx.scene.control.TextField
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
+import javafx.scene.robot.Robot
 import reaktive.Observer
 import reaktive.value.*
 
@@ -24,30 +26,45 @@ class SliderBar<T : Any>(
     private val name: ReactiveString,
     private val converter: Converter<T>,
     private val style: Style = Style.Regular,
+    sliderWidth: Double = DEFAULT_SLIDER_WIDTH,
+    private val sensitivity: Double = DEFAULT_SENSITIVITY,
     private val undoManager: UndoManager? = null,
     private val updateActionDescription: String? = null
 ) : StackPane() {
     constructor(
-        value: ReactiveVariable<T>, name: String, converter: Converter<T>, style: Style = Style.Regular,
+        value: ReactiveVariable<T>, name: String,
+        converter: Converter<T>, style: Style = Style.Regular,
+        sliderWidth: Double = DEFAULT_SLIDER_WIDTH, sensitivity: Double = DEFAULT_SENSITIVITY,
         undoManager: UndoManager? = null, updateActionDescription: String? = null
-    ) : this(value, reactiveValue(name), converter, style, undoManager, updateActionDescription)
+    ) : this(
+        value, reactiveValue(name), converter, style,
+        sliderWidth, sensitivity, undoManager, updateActionDescription
+    )
 
     private val bar = ProgressBar()
-    private val nameLabel = label(name)
-    private val valueLabel = Label()
+    private val nameLabel = label(name) styleClass "slider-name-label"
+    private val valueLabel = Label() styleClass "slider-value-label"
 
-    private val valueInput = TextField() styleClass "sleek-text-field"
+    private val valueInput = TextField().styleClass("sleek-text-field", "slider-value-input")
     private val valueObserver: Observer
+
+    private var dragStartPosition = Point2D(0.0, 0.0)
+    private var lastDragPosition = Point2D(0.0, 0.0)
+    private var dragIsShiftDown = false
+    private var dragStartValue = 0.0
+    private val robot = Robot()
 
     init {
         styleClass.add("slider-bar")
         children.add(bar)
-        bar.prefWidthProperty().bind(widthProperty())
+        minWidth = sliderWidth
+        bar.viewOrder = 100.0
+        bar.prefWidthProperty().bind(this.widthProperty())
         if (style == Style.AlwaysValue) children.add(valueLabel)
         else children.add(nameLabel)
-        nameLabel.prefWidthProperty().bind(widthProperty())
+        nameLabel.prefWidthProperty().bind(this.widthProperty())
         nameLabel.alignment = Pos.CENTER
-        valueLabel.prefWidthProperty().bind(widthProperty())
+        valueLabel.prefWidthProperty().bind(this.widthProperty())
         valueLabel.alignment = Pos.CENTER
         addEventHandlers()
         setupTextFieldInput()
@@ -82,21 +99,52 @@ class SliderBar<T : Any>(
         }
     }
 
+    private fun startValueDrag(ev: MouseEvent) {
+        dragStartPosition = Point2D(ev.screenX, ev.screenY)
+        lastDragPosition = dragStartPosition
+        dragIsShiftDown = ev.isShiftDown
+        dragStartValue = converter.toDouble(value.now)
+        cursor = Cursor.NONE
+    }
+
+    private fun dragValue(ev: MouseEvent) {
+        if (ev.isShiftDown != dragIsShiftDown) {
+            dragIsShiftDown = ev.isShiftDown
+            lastDragPosition = Point2D(ev.screenX, ev.screenY)
+            dragStartValue = converter.toDouble(value.now)
+            return
+        }
+        val deltaX = ev.screenX - lastDragPosition.x
+        val sens = if (ev.isShiftDown) sensitivity / 10 else sensitivity
+        val doubleValue = dragStartValue + (deltaX * sens)
+        val value = converter.fromDouble(doubleValue.coerceIn(0.0, 1.0))
+        updateValue(value)
+    }
+
+    private fun finishedValueDrag() {
+        cursor = Cursor.DEFAULT
+        robot.mouseMove(dragStartPosition)
+    }
+
+    private fun updateValue(v: T) {
+        val oldValue = value.now
+        if (v == oldValue) return
+        value.now = v
+        val actionDescription = updateActionDescription ?: "Update ${name.now}"
+        undoManager?.record(VariableEdit(value, oldValue, v, actionDescription))
+    }
+
     private fun addEventHandlers() {
         addEventHandler(MouseEvent.ANY) { ev ->
             when (ev.eventType) {
                 MouseEvent.MOUSE_ENTERED -> showValue()
-                MouseEvent.MOUSE_PRESSED -> if (ev.button == MouseButton.PRIMARY) setValueFromXCoordinate(ev.x)
-                MouseEvent.MOUSE_DRAGGED -> if (ev.button == MouseButton.PRIMARY) setValueFromXCoordinate(ev.x)
-                MouseEvent.MOUSE_RELEASED -> updateValue(converter.fromDouble(bar.progress))
+                MouseEvent.MOUSE_PRESSED -> if (ev.button == MouseButton.PRIMARY) startValueDrag(ev)
+                MouseEvent.MOUSE_DRAGGED -> if (ev.button == MouseButton.PRIMARY) dragValue(ev)
+                MouseEvent.MOUSE_RELEASED -> finishedValueDrag()
                 MouseEvent.MOUSE_EXITED -> showName()
                 MouseEvent.MOUSE_CLICKED -> {
                     if (ev.button == MouseButton.SECONDARY) {
                         showTextFieldInput()
-//                        val v = Prompt().showDialog(anchorNode = this) ?: return@addEventHandler
-//                        updateValue(v)
-                    } else {
-                        showValue()
                     }
                 }
             }
@@ -112,18 +160,6 @@ class SliderBar<T : Any>(
         }
     }
 
-    private fun updateValue(v: T) {
-        val oldValue = value.now
-        if (v == oldValue) return
-        value.now = v
-        val actionDescription = updateActionDescription ?: "Update ${name.now}"
-        undoManager?.record(VariableEdit(value, oldValue, v, actionDescription))
-    }
-
-    private inner class Prompt : TextPrompt<T>(nameLabel.text, converter.toString(value.now)) {
-        override fun convert(text: String): T? = converter.fromLiteral(text)
-    }
-
     private fun showValue() {
         setActiveControl(if (style == Style.AlwaysName) nameLabel else valueLabel)
     }
@@ -132,12 +168,6 @@ class SliderBar<T : Any>(
         setActiveControl(if (style == Style.AlwaysValue) valueLabel else nameLabel)
     }
 
-    private fun setValueFromXCoordinate(x: Double) {
-        val doubleValue = (x / this.width).coerceIn(0.0, 1.0)
-        val value = converter.fromDouble(doubleValue)
-        bar.progress = converter.toDouble(value)
-        valueLabel.text = converter.toString(value)
-    }
 
     interface Converter<T> {
         fun fromLiteral(value: String): T?
@@ -151,5 +181,10 @@ class SliderBar<T : Any>(
 
     enum class Style {
         Regular, AlwaysValue, AlwaysName;
+    }
+
+    companion object {
+        private const val DEFAULT_SLIDER_WIDTH = 70.0
+        private const val DEFAULT_SENSITIVITY = 0.003
     }
 }
