@@ -74,21 +74,21 @@ class SliderBar<T : Any>(
     private fun setupTextFieldInput() {
         valueInput.prefWidthProperty().bind(bar.widthProperty())
         valueInput.focusedProperty().addListener { _, _, focused ->
-            if (!focused) showName()
+            if (!focused) exitValueInput()
         }
         valueInput.registerShortcuts {
             on("ESCAPE") {
-                showName()
+                exitValueInput()
             }
             on("ENTER") {
                 val v = converter.fromLiteral(valueInput.text) ?: return@on
                 updateValue(v)
-                showName()
+                exitValueInput()
             }
         }
     }
 
-    private fun setActiveControl(node: Node) {
+    private fun show(node: Node) {
         children[1] = node
     }
 
@@ -137,11 +137,11 @@ class SliderBar<T : Any>(
     private fun addEventHandlers() {
         addEventHandler(MouseEvent.ANY) { ev ->
             when (ev.eventType) {
-                MouseEvent.MOUSE_ENTERED -> showValue()
+                MouseEvent.MOUSE_ENTERED -> mouseEntered()
                 MouseEvent.MOUSE_PRESSED -> if (ev.button == MouseButton.PRIMARY) startValueDrag(ev)
                 MouseEvent.MOUSE_DRAGGED -> if (ev.button == MouseButton.PRIMARY) dragValue(ev)
                 MouseEvent.MOUSE_RELEASED -> finishedValueDrag()
-                MouseEvent.MOUSE_EXITED -> showName()
+                MouseEvent.MOUSE_EXITED -> mouseExited()
                 MouseEvent.MOUSE_CLICKED -> {
                     if (ev.button == MouseButton.SECONDARY) {
                         showTextFieldInput()
@@ -153,21 +153,29 @@ class SliderBar<T : Any>(
         }
     }
 
+    private fun mouseEntered() {
+        if (style == Style.Regular && children[1] !is TextField) {
+            show(valueLabel)
+        }
+    }
+
+    private fun mouseExited() {
+        if (style == Style.Regular && children[1] !is TextField) {
+            show(nameLabel)
+        }
+    }
+
     private fun showTextFieldInput() {
         valueInput.text = converter.toString(value.now)
-        setActiveControl(valueInput)
+        show(valueInput)
         runAfterLayout {
             valueInput.requestFocus()
             valueInput.selectAll()
         }
     }
 
-    private fun showValue() {
-        setActiveControl(if (style == Style.AlwaysName) nameLabel else valueLabel)
-    }
-
-    private fun showName() {
-        setActiveControl(if (style == Style.AlwaysValue) valueLabel else nameLabel)
+    private fun exitValueInput() {
+        show(if (style == Style.AlwaysValue) valueLabel else nameLabel)
     }
 
 
