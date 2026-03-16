@@ -147,7 +147,9 @@ class SliderBar<T : Any>(
                         showTextFieldInput()
                     }
                 }
+                else -> return@addEventHandler
             }
+            ev.consume()
         }
     }
 
