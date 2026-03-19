@@ -19,6 +19,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.robot.Robot
 import reaktive.Observer
+import reaktive.event.event
 import reaktive.value.*
 
 class SliderBar<T : Any>(
@@ -54,6 +55,9 @@ class SliderBar<T : Any>(
     private var dragStartValue = 0.0
     private val robot = Robot()
 
+    private val updateFinish = event<T>()
+    val updateFinished get() = updateFinish.stream
+
     init {
         styleClass.add("slider-bar")
         children.add(bar)
@@ -83,6 +87,7 @@ class SliderBar<T : Any>(
             on("ENTER") {
                 val v = converter.fromLiteral(valueInput.text) ?: return@on
                 updateValue(v)
+                updateFinish.fire(v)
                 exitValueInput()
             }
         }
@@ -124,6 +129,7 @@ class SliderBar<T : Any>(
     private fun finishedValueDrag() {
         cursor = Cursor.DEFAULT
         robot.mouseMove(dragStartPosition)
+        updateFinish.fire(value.now)
     }
 
     private fun updateValue(v: T) {
