@@ -90,7 +90,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     open fun displayText(option: E): String = extractText(option)
 
-    override fun getDefault(): E? = null //TODO really? not initialOption?
+    override fun getDefault(): E? = null
 
     override fun onReceiveFocus() {
         searchText.requestFocus()
@@ -125,7 +125,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     private fun refilterOptions() {
         layout.children.clear()
-        filteredOptions = options().filter(filter)
+        filteredOptions = options().filter(filter).distinct()
         val itemTexts = filteredOptions.map(::extractText).map(String::lowercase)
         val search = searchText.text.lowercase()
         if (search.isNotBlank()) {
@@ -152,7 +152,8 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
             layout.children.add(box)
         }
         select(
-            filteredOptions.firstOrNull()?.let(Option<*>::SelectItem)
+            selectedOption.takeIf { it != Option.None && !(it is Option.SelectItem && it.obj !in filteredOptions) }
+                ?: filteredOptions.firstOrNull()?.let(Option<*>::SelectItem)
                 ?: Option.CreateItem.takeIf { canCreateItem }
                 ?: Option.None
         )
@@ -266,19 +267,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     protected sealed class Option<out E> {
         data object None : Option<Nothing>()
-        class SelectItem<E>(val obj: E) : Option<E>() {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (javaClass != other?.javaClass) return false
-
-                other as SelectItem<*>
-
-                return obj === other.obj
-            }
-
-            override fun hashCode(): Int = obj?.hashCode() ?: 0
-        }
-
+        data class SelectItem<E>(val obj: E) : Option<E>()
         data object CreateItem : Option<Nothing>()
     }
 
