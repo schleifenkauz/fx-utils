@@ -28,16 +28,16 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
     private val scrollPane = ScrollPane(layout)
     final override val content: VBox = VBox(searchText, scrollPane) styleClass "selector-prompt"
 
-    private val optionBoxes = mutableMapOf<Option<E>, Region>()
+    private val optionCells = mutableMapOf<Option<E>, Region>()
     private var filteredOptions: List<E> = emptyList()
     protected var selectedOption: Option<E> = Option.None
         private set
 
-    private var initialOption: E? = null //TODO is this needed
-
     private var filter: (E) -> Boolean = { true }
 
     protected open val canCreateItem: Boolean get() = false
+
+    protected open val maxItems: Int get() = 10
 
     protected abstract fun options(): List<E>
 
@@ -76,11 +76,11 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
     }
 
     fun selectInitialOption(option: E?): SelectorPrompt<E> {
-        initialOption = option
+        select(option)
         return this
     }
 
-    protected fun getBox(option: E) = optionBoxes[Option.SelectItem(option)]
+    protected fun getBox(option: E) = optionCells[Option.SelectItem(option)]
 
     protected open fun makeOption(text: String): E? = null
 
@@ -99,11 +99,14 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     override fun createLayout(): Region = content
 
-    private fun getOptionCell(option: Option<E>): Region = optionBoxes.getOrPut(option) {
+    private fun getOptionCell(option: Option<E>): Region = optionCells.getOrPut(option) {
         when (option) {
             Option.None -> HBox()
             is Option.SelectItem -> {
                 val cell = createCell(option.obj).styleClass("option-cell")
+                if (option == selectedOption) {
+                    cell.pseudoClassStateChanged(SELECTED, true)
+                }
                 cell.setOnMouseClicked { commit(option) }
                 cell
             }
@@ -122,14 +125,29 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     private fun refilterOptions() {
         layout.children.clear()
-        filteredOptions = options().filter { option ->
-            extractText(option).contains(searchText.text, ignoreCase = true) && filter(option)
+        filteredOptions = options().filter(filter)
+        val itemTexts = filteredOptions.map(::extractText)
+        val search = searchText.text
+        if (search.isNotBlank()) {
+            val sortedBySimilarity = filteredOptions.asSequence()
+                .mapIndexed { i, option -> option to similarity(search, itemTexts[i]) }
+                .filter { (_, similarity) -> similarity > 0 }
+                .sortedByDescending { (item, similarity) ->
+                    if (selectedOption == Option.SelectItem(item)) Int.MAX_VALUE
+                    else similarity
+                }
+                .map { (option, _) -> option }
+            filteredOptions = sortedBySimilarity.take(maxItems).toList()
+        } else {
+            filteredOptions = filteredOptions.take(maxItems)
         }
         for (option in filteredOptions) {
             val cell = getOptionCell(Option.SelectItem(option))
             layout.children.add(cell)
         }
-        if (canCreateItem && searchText.text.isNotBlank() && searchText.text !in filteredOptions.map(::extractText)) {
+        if (canCreateItem && filteredOptions.size < maxItems &&
+            search.isNotBlank() && search !in itemTexts
+        ) {
             val box = getOptionCell(Option.CreateItem)
             layout.children.add(box)
         }
@@ -188,9 +206,9 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
     }
 
     private fun select(option: Option<E>) {
-        optionBoxes[selectedOption]?.pseudoClassStateChanged(SELECTED, false)
+        optionCells[selectedOption]?.pseudoClassStateChanged(SELECTED, false)
         selectedOption = option
-        optionBoxes[option]?.pseudoClassStateChanged(SELECTED, true)
+        optionCells[option]?.pseudoClassStateChanged(SELECTED, true)
     }
 
     fun select(option: E?) {
@@ -208,7 +226,6 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     override fun beforeShowing() {
         refilterOptions()
-        if (initialOption in filteredOptions) select(initialOption)
     }
 
     fun showPopup(placement: PromptPlacement, initialOption: E? = null): E? =
@@ -263,5 +280,21 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
         }
 
         data object CreateItem : Option<Nothing>()
+    }
+
+    companion object {
+        private fun similarity(search: String, match: String): Int {
+            var i = 0
+            for (ch in search) {
+                while (i < match.length && ch != match[i]) i++
+                if (i == match.length) return 0
+            }
+            val minLength = minOf(search.length, match.length)
+            var count = 0
+            for (i in 0 until minLength) {
+                if (search[i] == match[i]) count++
+            }
+            return count
+        }
     }
 }
