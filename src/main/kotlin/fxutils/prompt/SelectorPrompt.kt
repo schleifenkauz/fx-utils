@@ -126,8 +126,8 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
     private fun refilterOptions() {
         layout.children.clear()
         filteredOptions = options().filter(filter)
-        val itemTexts = filteredOptions.map(::extractText)
-        val search = searchText.text
+        val itemTexts = filteredOptions.map(::extractText).map(String::lowercase)
+        val search = searchText.text.lowercase()
         if (search.isNotBlank()) {
             val sortedBySimilarity = filteredOptions.asSequence()
                 .mapIndexed { i, option -> option to similarity(search, itemTexts[i]) }
