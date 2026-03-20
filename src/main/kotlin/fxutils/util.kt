@@ -510,3 +510,7 @@ fun makeVerticalLabel(nameLabel: Text): StackPane {
     nameLabel.translateYProperty().bind(nameLabel.textProperty().map { -nameLabel.prefWidth(-1.0) / 2 })
     return namePane
 }
+
+val Rectangle2D.centerX get() = (minX + maxX) / 2
+val Rectangle2D.centerY get() = (minY + maxY) / 2
+val Rectangle2D.center get() = Point2D(centerX, centerY)

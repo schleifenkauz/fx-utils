@@ -8,7 +8,6 @@ import fxutils.styleClass
 import fxutils.undo.UndoManager
 import javafx.event.Event
 import javafx.geometry.Point2D
-import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ScrollPane
@@ -98,40 +97,40 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
         searchText.selectAll()
     }
 
-    override fun createLayout(): Parent = content
+    override fun createLayout(): Region = content
 
-    private fun prepareOptionBoxes() {
-        optionBoxes.clear()
-        for (option in options()) {
-            val box = createCell(option).styleClass("option-cell")
-            box.setOnMouseClicked {
-                commit(option)
+    private fun getOptionCell(option: Option<E>): Region = optionBoxes.getOrPut(option) {
+        when (option) {
+            Option.None -> HBox()
+            is Option.SelectItem -> {
+                val cell = createCell(option.obj).styleClass("option-cell")
+                cell.setOnMouseClicked { commit(option) }
+                cell
             }
-            optionBoxes[Option.SelectItem(option)] = box
-        }
-        if (canCreateItem) {
-            val label = Label().styleClass("option-label")
-            label.textProperty().bind(searchText.textProperty().map { "Create '$it'" })
-            val box = HBox(label).styleClass("option-cell")
-            box.setOnMouseClicked {
-                confirmText(searchText.text)
+
+            is Option.CreateItem -> {
+                val label = Label().styleClass("option-label")
+                label.textProperty().bind(searchText.textProperty().map { "Create '$it'" })
+                val box = HBox(label).styleClass("option-cell")
+                box.setOnMouseClicked {
+                    confirmText(searchText.text)
+                }
+                box
             }
-            optionBoxes[Option.CreateItem] = box
         }
     }
 
     private fun refilterOptions() {
-        prepareOptionBoxes()
         layout.children.clear()
         filteredOptions = options().filter { option ->
             extractText(option).contains(searchText.text, ignoreCase = true) && filter(option)
         }
         for (option in filteredOptions) {
-            val box = optionBoxes.getValue(Option.SelectItem(option))
-            layout.children.add(box)
+            val cell = getOptionCell(Option.SelectItem(option))
+            layout.children.add(cell)
         }
         if (canCreateItem && searchText.text.isNotBlank() && searchText.text !in filteredOptions.map(::extractText)) {
-            val box = optionBoxes.getValue(Option.CreateItem)
+            val box = getOptionCell(Option.CreateItem)
             layout.children.add(box)
         }
         select(
@@ -212,32 +211,21 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
         if (initialOption in filteredOptions) select(initialOption)
     }
 
+    fun showPopup(placement: PromptPlacement, initialOption: E? = null): E? =
+        selectInitialOption(initialOption).showDialog(placement)
+
     fun showPopup(
-        anchor: Point2D? = null, owner: Window? = null,
+        anchor: Point2D, owner: Window,
         initialOption: E? = null,
-    ): E? {
-        selectInitialOption(initialOption)
-        return showDialog(owner, anchor)
-    }
+    ): E? = selectInitialOption(initialOption).showDialog(owner, anchor)
 
     fun showPopup(anchorNode: Region, initialOption: E? = null): E? {
         selectInitialOption(initialOption)
         return showDialog(anchorNode)
     }
 
-    fun showPopup(ownerWindow: Window, anchorNode: Region?, initialOption: E? = null): E? {
-        val anchor = anchorNode?.localToScreen(0.0, anchorNode.height)
-        selectInitialOption(initialOption)
-        return showDialog(ownerWindow, anchor)
-    }
-
-    fun showPopup(
-        ev: Event?, initialOption: E? = null,
-        offset: Point2D? = null, preferMouseCoords: Boolean = false,
-    ): E? {
-        selectInitialOption(initialOption)
-        return showDialog(ev, offset, preferMouseCoords)
-    }
+    fun showPopup(ev: Event?, initialOption: E? = null, preferMouseCoords: Boolean = false): E? =
+        selectInitialOption(initialOption).showDialog(ev, preferMouseCoords)
 
     fun selectorButton(
         property: KMutableProperty0<E>, default: E = property.get(),
@@ -261,7 +249,19 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     protected sealed class Option<out E> {
         data object None : Option<Nothing>()
-        data class SelectItem<E>(val obj: E) : Option<E>()
+        class SelectItem<E>(val obj: E) : Option<E>() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as SelectItem<*>
+
+                return obj === other.obj
+            }
+
+            override fun hashCode(): Int = obj?.hashCode() ?: 0
+        }
+
         data object CreateItem : Option<Nothing>()
     }
 }

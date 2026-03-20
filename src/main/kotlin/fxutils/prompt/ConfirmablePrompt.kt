@@ -3,9 +3,9 @@ package fxutils.prompt
 import fxutils.SubWindow
 import fxutils.registerShortcuts
 import fxutils.styleClass
-import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 
 abstract class ConfirmablePrompt<R : Any>(
@@ -32,7 +32,7 @@ abstract class ConfirmablePrompt<R : Any>(
 
     protected open fun buttons(): List<Button> = listOf(cancelButton, confirmButton) + extraButtons()
 
-    override fun createLayout(): Parent {
+    override fun createLayout(): Region {
         val layout = super.createLayout() as VBox
         val buttonsBar = HBox() styleClass "buttons-bar"
         buttonsBar.children.addAll(buttons())
