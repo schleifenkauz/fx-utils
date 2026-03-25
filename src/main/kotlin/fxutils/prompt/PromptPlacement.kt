@@ -2,6 +2,7 @@ package fxutils.prompt
 
 import fxutils.centerX
 import fxutils.centerY
+import fxutils.getParent
 import javafx.event.Event
 import javafx.geometry.Point2D
 import javafx.scene.Node
@@ -73,7 +74,21 @@ fun MouseEvent.atMouseCoords(): PromptPlacement = PromptPlacement.At(screenX, sc
 
 fun Event?.atMouseCoords(): PromptPlacement = PromptPlacement.atMouseCoords(this?.sourceWindow)
 
-fun Event.nextToTarget(): PromptPlacement = PromptPlacement.RelativeTo(target as Region)
+fun Event.nextToTarget(): PromptPlacement = when (val target = target) {
+    is Region -> PromptPlacement.RelativeTo(target)
+    is Node -> {
+        val parentRegion = target.getParent<Region>()
+        if (parentRegion != null) PromptPlacement.RelativeTo(parentRegion)
+        else {
+            val pos = target.localToScreen(0.0, 0.0)
+            PromptPlacement.At(pos.x, pos.y, target.scene.window)
+        }
+    }
+
+    is Scene -> PromptPlacement.Centered(target.window)
+    is Window -> PromptPlacement.Centered(target)
+    else -> PromptPlacement.Centered()
+}
 
 val Event.sourceWindow: Window?
     get() = when (val src = source) {

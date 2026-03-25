@@ -21,6 +21,7 @@ import javafx.css.PseudoClass
 import javafx.event.ActionEvent
 import javafx.geometry.*
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode.ENTER
 import javafx.scene.input.KeyCombination
@@ -500,6 +501,12 @@ inline fun <reified T: Node> Node.getParent(): T? {
         parent = parent.parent
     }
     return parent as? T
+}
+
+operator fun Node.contains(other: Node): Boolean = when {
+    this === other -> true
+    this is Parent -> childrenUnmodifiable.any { it.contains(other) }
+    else -> false
 }
 
 fun makeVerticalLabel(nameLabel: Text): StackPane {
