@@ -145,6 +145,7 @@ class SliderBar<T : Any>(
     private fun addEventHandlers() {
         addEventHandler(MouseEvent.ANY) { ev ->
             when (ev.eventType) {
+                MouseEvent.DRAG_DETECTED -> {} //to avoid propagating to parent
                 MouseEvent.MOUSE_ENTERED -> mouseEntered()
                 MouseEvent.MOUSE_PRESSED -> if (ev.button == MouseButton.PRIMARY) startValueDrag(ev)
                 MouseEvent.MOUSE_DRAGGED -> if (ev.button == MouseButton.PRIMARY) dragValue(ev)

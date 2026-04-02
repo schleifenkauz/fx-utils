@@ -53,12 +53,14 @@ abstract class Prompt<R> {
 
     }
 
+    protected open fun createWindow(content: Region): SubWindow = SubWindow(content, title, windowType)
+
     fun showDialog(placement: PromptPlacement = PromptPlacement.Centered()): R {
         beforeShowing()
         val owner = placement.parentWindow
         val content = createLayout()
         if (_window == null) {
-            _window = SubWindow(content, title, windowType)
+            _window = createWindow(content)
             if (owner != null && owner !is Popup && !(owner is SubWindow && owner.type == SubWindow.Type.Popup)) {
                 window.initOwner(owner)
             }

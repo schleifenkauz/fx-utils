@@ -3,6 +3,7 @@ package fxutils.prompt
 import fxutils.PseudoClasses.SELECTED
 import fxutils.controls.PropertySelectorButton
 import fxutils.controls.VariableSelectorButton
+import fxutils.registerShortcuts
 import fxutils.shortcut
 import fxutils.styleClass
 import fxutils.undo.UndoManager
@@ -163,43 +164,43 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
 
     private fun registerShortcuts() {
         content.addEventFilter(KeyEvent.KEY_PRESSED) { ev ->
-            when {
-                "DOWN".shortcut.matches(ev) || "UP".shortcut.matches(ev) -> {
-                    val deltaIdx = if (ev.code == KeyCode.UP) -1 else +1
-                    val selectedIndex = when (val option = selectedOption) {
-                        Option.None -> -1
-                        is Option.SelectItem -> filteredOptions.indexOf(option.obj)
-                        Option.CreateItem -> filteredOptions.size
+            if ("DOWN".shortcut.matches(ev) || "UP".shortcut.matches(ev)) {
+                val deltaIdx = if (ev.code == KeyCode.UP) -1 else +1
+                val selectedIndex = when (val option = selectedOption) {
+                    Option.None -> -1
+                    is Option.SelectItem -> filteredOptions.indexOf(option.obj)
+                    Option.CreateItem -> filteredOptions.size
+                }
+                val nextIndex = selectedIndex + deltaIdx
+                if (nextIndex in filteredOptions.indices) {
+                    select(filteredOptions[nextIndex])
+                } else if (nextIndex == filteredOptions.size) {
+                    if (optionCells.containsKey(Option.CreateItem)) {
+                        select(Option.CreateItem)
+                    } else {
+                        select(filteredOptions.firstOrNull())
                     }
-                    val nextIndex = selectedIndex + deltaIdx
-                    if (nextIndex in filteredOptions.indices) {
-                        select(filteredOptions[nextIndex])
-                    } else if (nextIndex == filteredOptions.size) {
-                        if (optionCells.containsKey(Option.CreateItem)) {
-                            select(Option.CreateItem)
-                        } else {
-                            select(filteredOptions.firstOrNull())
-                        }
-                    } else if (nextIndex == -1) {
-                        select(filteredOptions.lastOrNull())
-                    }
-                    ev.consume()
+                } else if (nextIndex == -1) {
+                    select(filteredOptions.lastOrNull())
                 }
+                ev.consume()
+            }
 
-                "Enter".shortcut.matches(ev) || "Tab".shortcut.matches(ev) -> {
-                    if (selectedOption != Option.None) {
-                        commit(selectedOption)
-                    } else confirmText(searchText.text)
-                    ev.consume()
-                }
-
-                "Ctrl+Enter".shortcut.matches(ev) -> {
-                    val text = searchText.text.takeIf { it.isNotBlank() } ?: return@addEventFilter
-                    confirmText(text)
-                    ev.consume()
-                }
+        }
+        content.registerShortcuts {
+            on("Enter") { confirm() }
+            on("Tab", consume = false) {}
+            on("Ctrl+Enter") {
+                val text = searchText.text.takeIf { it.isNotBlank() } ?: return@on
+                confirmText(text)
             }
         }
+    }
+
+    private fun confirm() {
+        if (selectedOption != Option.None) {
+            commit(selectedOption)
+        } else confirmText(searchText.text)
     }
 
     private fun commit(option: Option<E>) {
