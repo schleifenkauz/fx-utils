@@ -129,7 +129,9 @@ class SliderBar<T : Any>(
     private fun finishedValueDrag() {
         cursor = Cursor.DEFAULT
         robot.mouseMove(dragStartPosition)
-        updateFinish.fire(value.now)
+        if (value.now != dragStartValue) {
+            updateFinish.fire(value.now)
+        }
     }
 
     private fun updateValue(v: T) {

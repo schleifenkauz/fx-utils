@@ -11,6 +11,7 @@ import javafx.geometry.Point2D
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ScrollPane
+import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Region
@@ -163,22 +164,29 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
     private fun registerShortcuts() {
         content.addEventFilter(KeyEvent.KEY_PRESSED) { ev ->
             when {
-                "Shift?+TAB".shortcut.matches(ev) -> {
-                    val deltaIdx = if (ev.isShiftDown) -1 else +1
+                "DOWN".shortcut.matches(ev) || "UP".shortcut.matches(ev) -> {
+                    val deltaIdx = if (ev.code == KeyCode.UP) -1 else +1
                     val selectedIndex = when (val option = selectedOption) {
                         Option.None -> -1
                         is Option.SelectItem -> filteredOptions.indexOf(option.obj)
                         Option.CreateItem -> filteredOptions.size
                     }
-                    if (selectedIndex + deltaIdx in filteredOptions.indices) {
-                        select(filteredOptions[selectedIndex + deltaIdx])
-                    } else if (selectedIndex + deltaIdx == filteredOptions.size) {
-                        select(Option.CreateItem)
+                    val nextIndex = selectedIndex + deltaIdx
+                    if (nextIndex in filteredOptions.indices) {
+                        select(filteredOptions[nextIndex])
+                    } else if (nextIndex == filteredOptions.size) {
+                        if (optionCells.containsKey(Option.CreateItem)) {
+                            select(Option.CreateItem)
+                        } else {
+                            select(filteredOptions.firstOrNull())
+                        }
+                    } else if (nextIndex == -1) {
+                        select(filteredOptions.lastOrNull())
                     }
                     ev.consume()
                 }
 
-                "Enter".shortcut.matches(ev) -> {
+                "Enter".shortcut.matches(ev) || "Tab".shortcut.matches(ev) -> {
                     if (selectedOption != Option.None) {
                         commit(selectedOption)
                     } else confirmText(searchText.text)
@@ -283,7 +291,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
             for (i in 0 until minLength) {
                 if (search[i] == match[i]) count++
             }
-            return count
+            return count + 1
         }
     }
 }
