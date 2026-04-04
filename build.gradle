@@ -9,7 +9,9 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    mavenLocal()
+    maven {
+        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+    }
 }
 
 publishing {
@@ -17,6 +19,17 @@ publishing {
         maven(MavenPublication) {
             from components.java
             artifact kotlinSourcesJar
+        }
+    }
+
+    repositories {
+        maven {
+            name = "sonatypeSnapshots"
+            url = uri("https://central.sonatype.com/repository/maven-snapshots")
+            credentials {
+                username = findProperty("sonatypeUsername")
+                password = findProperty("sonatypePassword")
+            }
         }
     }
 }
@@ -38,7 +51,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
 
     implementation 'de.schleifenkauz:reaktive:1.0-SNAPSHOT'
-    implementation "de.schleifenkauz:bundles:1.0-SNAPSHOT"
+    implementation "de.schleifenkauz:kollektion:1.0-SNAPSHOT"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     api("org.jetbrains.spek:spek-api:1.1.5") {

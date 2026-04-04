@@ -3,3 +3,9 @@ plugins {
 }
 rootProject.name = 'fx-utils'
 
+if (file("../reaktive").exists()) {
+    includeBuild("../reaktive")
+}
+if (file("../kollektion").exists()) {
+    includeBuild("../kollektion")
+}
