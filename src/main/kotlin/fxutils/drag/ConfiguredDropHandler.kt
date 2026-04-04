@@ -4,7 +4,10 @@ import javafx.scene.input.DataFormat
 import javafx.scene.input.DragEvent
 import javafx.scene.input.Dragboard
 import javafx.scene.input.TransferMode
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.ObjectInputStream
+import java.nio.ByteBuffer
 
 open class ConfiguredDropHandler(setup: ConfiguredDropHandler.() -> Unit = {}) : DropHandler {
     private val handlers: MutableMap<DataFormat, DataFormatHandler> = mutableMapOf()
@@ -84,7 +87,20 @@ open class ConfiguredDropHandler(setup: ConfiguredDropHandler.() -> Unit = {}) :
         crossinline handler: (DragEvent, T) -> Boolean,
     ) {
         handleFormat(format, acceptedModes) { ev, dragboard ->
-            val obj = dragboard.getContent(format) as? T
+            val obj = when (val content = dragboard.getContent(format)) {
+                is T -> content
+                is ByteBuffer -> {
+                    val inputStream = ByteArrayInputStream(content.array())
+                    try {
+                        ObjectInputStream(inputStream).readObject() as? T
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
+                }
+
+                else -> null
+            }
             obj?.let { handler(ev, it) } ?: false
         }
     }

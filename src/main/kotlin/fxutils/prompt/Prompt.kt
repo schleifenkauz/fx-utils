@@ -19,7 +19,7 @@ abstract class Prompt<R> {
         private set
     protected val window get() = _window ?: error("Window for prompt $title not initialized")
 
-    var _placement: PromptPlacement? = null
+    private var _placement: PromptPlacement? = null
 
     val placement: PromptPlacement get() = _placement ?: error("Prompt $title not yet placed.")
 

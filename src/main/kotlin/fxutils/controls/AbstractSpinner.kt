@@ -7,7 +7,6 @@ import fxutils.setRoot
 import fxutils.styleClass
 import fxutils.undo.UndoManager
 import fxutils.undo.VariableEdit
-import javafx.css.PseudoClass
 import javafx.scene.control.Control
 import javafx.scene.control.TextField
 import javafx.scene.control.skin.TextFieldSkin
@@ -139,12 +138,12 @@ abstract class AbstractSpinner<T : Comparable<T>>(
             updateValue(newValue, "Update")
         }
         valueInput.text = value.now.toString()
-        onUserInput(value.now)
         valueInput.style = ""
     }
 
     private fun updateValue(newValue: T, actionDescription: String) {
         value.now = newValue
+        onUserInput(value.now)
         undoManager?.record(VariableEdit(value, value.now, newValue, "$actionDescription $variableDescription"))
     }
 
