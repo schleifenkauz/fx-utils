@@ -1,6 +1,5 @@
 package fxutils.drag
 
-import fxutils.modifiers
 import javafx.event.EventType
 import javafx.geometry.BoundingBox
 import javafx.geometry.Bounds
@@ -13,6 +12,8 @@ import javafx.scene.input.Dragboard
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.stage.Window
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.math.absoluteValue
 
 fun Node.setupDragging(
@@ -202,11 +203,16 @@ fun Node.setupDropArea(dropHandler: DropHandler) {
     }
 }
 
-fun Node.setupDropArea(configure: ConfiguredDropHandler.() -> Unit) {
-    setupDropArea(ConfiguredDropHandler(configure))
+fun Node.setupDropArea(json: Json = Json, configure: ConfiguredDropHandler.() -> Unit) {
+    setupDropArea(ConfiguredDropHandler(json, configure))
 }
 
 fun Dragboard.hasFiles(vararg extensions: String) =
     hasFiles() && files.all { f -> f.extension in extensions }
 
 fun Dragboard.hasFile(vararg extensions: String): Boolean = hasFiles(*extensions) && files.size == 1
+
+inline fun <reified T> Dragboard.putSerializableContent(format: TypedDataFormat<T>, value: T, json: Json = Json) {
+    val str = json.encodeToString(value)
+    setContent(mapOf(format to str))
+}

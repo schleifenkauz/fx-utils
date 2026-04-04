@@ -4,12 +4,13 @@ import javafx.scene.input.DataFormat
 import javafx.scene.input.DragEvent
 import javafx.scene.input.Dragboard
 import javafx.scene.input.TransferMode
+import kotlinx.serialization.json.Json
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.ObjectInputStream
 import java.nio.ByteBuffer
 
-open class ConfiguredDropHandler(setup: ConfiguredDropHandler.() -> Unit = {}) : DropHandler {
+open class ConfiguredDropHandler(val json: Json = Json, setup: ConfiguredDropHandler.() -> Unit = {}) : DropHandler {
     private val handlers: MutableMap<DataFormat, DataFormatHandler> = mutableMapOf()
     private val fileHandlers: MutableMap<String, (DragEvent, List<File>) -> Boolean> = mutableMapOf()
     private val singleFileHandlers: MutableMap<String, (DragEvent, File) -> Boolean> = mutableMapOf()
@@ -89,6 +90,7 @@ open class ConfiguredDropHandler(setup: ConfiguredDropHandler.() -> Unit = {}) :
         handleFormat(format, acceptedModes) { ev, dragboard ->
             val obj = when (val content = dragboard.getContent(format)) {
                 is T -> content
+                is String -> json.decodeFromString(content)
                 is ByteBuffer -> {
                     val inputStream = ByteArrayInputStream(content.array())
                     try {
