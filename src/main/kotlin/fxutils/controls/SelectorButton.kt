@@ -1,5 +1,6 @@
 package fxutils.controls
 
+import fxutils.prompt.PromptPlacement
 import fxutils.prompt.SelectorPrompt
 import fxutils.undo.Edit
 import fxutils.undo.UndoManager
@@ -58,8 +59,11 @@ abstract class SelectorButton<E : Any>(
         setOnMouseClicked { ev ->
             when (ev.button) {
                 MouseButton.PRIMARY -> {
-                    val result = prompt.showPopup(anchorNode = this, initialOption = getCurrent())
-                    if (result != null) onSelect(result)
+                    if (!prompt.isShowing) {
+                        val placement = PromptPlacement.RelativeTo(this)
+                        val result = prompt.selectInitialOption(getCurrent()).showDialog(placement)
+                        if (result != null) onSelect(result)
+                    }
                 }
 
                 MouseButton.SECONDARY -> onSelect(defaultValue)

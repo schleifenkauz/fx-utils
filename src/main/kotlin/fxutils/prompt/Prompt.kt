@@ -32,6 +32,8 @@ abstract class Prompt<R> {
 
     protected open val windowType get() = SubWindow.Type.Popup
 
+    val isShowing: Boolean get() = _window != null && window.isShowing
+
     protected fun commit(result: R) {
         commited = true
         this.result = result
