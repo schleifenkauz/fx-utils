@@ -2,6 +2,7 @@ package fxutils.prompt
 
 import fxutils.styleClass
 import javafx.scene.control.TextField
+import javafx.scene.input.KeyEvent
 
 abstract class TextPrompt<R : Any>(final override val title: String, initialText: String) : Prompt<R?>() {
     protected abstract fun convert(text: String): R?
@@ -21,5 +22,6 @@ abstract class TextPrompt<R : Any>(final override val title: String, initialText
             if (value != null) commit(value)
             ev.consume()
         }
+        content.addEventHandler(KeyEvent.KEY_RELEASED) { ev -> ev.consume() }
     }
 }
