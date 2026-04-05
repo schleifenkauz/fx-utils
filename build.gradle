@@ -35,7 +35,7 @@ publishing {
 }
 
 javafx {
-    version = '19.0.2.1'
+    version = property('javafx_version')
     modules = ['javafx.controls']
     configuration = 'compileOnly'
 }
@@ -62,5 +62,5 @@ test {
     useJUnitPlatform()
 }
 kotlin {
-    jvmToolchain(19)
+    jvmToolchain(Integer.parseInt(findProperty("jdk_version") as String))
 }
