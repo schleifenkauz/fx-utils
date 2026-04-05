@@ -154,7 +154,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
             layout.children.add(box)
         }
         select(
-            selectedOption.takeIf { it != Option.None && !(it is Option.SelectItem && it.obj !in filteredOptions) }
+            selectedOption.takeIf { it is Option.SelectItem && it.obj in filteredOptions }
                 ?: filteredOptions.firstOrNull()?.let(Option<*>::SelectItem)
                 ?: Option.CreateItem.takeIf { canCreateItem }
                 ?: Option.None
@@ -171,7 +171,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
                     is Option.SelectItem -> filteredOptions.indexOf(option.obj)
                     Option.CreateItem -> filteredOptions.size
                 }
-                val nextIndex = selectedIndex + deltaIdx
+                val nextIndex = (selectedIndex + deltaIdx).mod(filteredOptions.size)
                 if (nextIndex in filteredOptions.indices) {
                     select(filteredOptions[nextIndex])
                 } else if (nextIndex == filteredOptions.size) {
@@ -180,7 +180,7 @@ abstract class SelectorPrompt<E : Any>(public override val title: String) : Prom
                     } else {
                         select(filteredOptions.firstOrNull())
                     }
-                } else if (nextIndex == -1) {
+                } else if (nextIndex == -1 || nextIndex == filteredOptions.lastIndex + 1) {
                     select(filteredOptions.lastOrNull())
                 }
                 ev.consume()

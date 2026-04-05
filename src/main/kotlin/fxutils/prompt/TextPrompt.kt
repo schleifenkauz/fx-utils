@@ -2,6 +2,7 @@ package fxutils.prompt
 
 import fxutils.styleClass
 import javafx.scene.control.TextField
+import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 
 abstract class TextPrompt<R : Any>(final override val title: String, initialText: String) : Prompt<R?>() {
@@ -17,11 +18,20 @@ abstract class TextPrompt<R : Any>(final override val title: String, initialText
     }
 
     init {
-        content.setOnAction { ev ->
-            val value = convert(content.text)
-            if (value != null) commit(value)
+        content.addEventHandler(KeyEvent.KEY_RELEASED) { ev ->
+            when (ev.code) {
+                KeyCode.ENTER -> {
+                    val value = convert(content.text)
+                    if (value != null) commit(value)
+                }
+
+                KeyCode.ESCAPE -> {
+                    window.hide()
+                }
+
+                else -> {}
+            }
             ev.consume()
         }
-        content.addEventHandler(KeyEvent.KEY_RELEASED) { ev -> ev.consume() }
     }
 }
