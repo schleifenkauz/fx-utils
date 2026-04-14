@@ -1,12 +1,16 @@
 package fxutils.prompt
 
 import fxutils.styleClass
+import javafx.application.Platform
 import javafx.scene.control.TextField
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 abstract class TextPrompt<R : Any>(final override val title: String, initialText: String) : Prompt<R?>() {
-    protected abstract fun convert(text: String): R?
+    protected abstract suspend fun convert(text: String, ev: KeyEvent): R?
 
     final override val content: TextField = TextField(initialText).styleClass("prompt", "prompt-text-field")
 
@@ -21,8 +25,14 @@ abstract class TextPrompt<R : Any>(final override val title: String, initialText
         content.addEventHandler(KeyEvent.KEY_RELEASED) { ev ->
             when (ev.code) {
                 KeyCode.ENTER -> {
-                    val value = convert(content.text)
-                    if (value != null) commit(value)
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val value = convert(content.text, ev)
+                        if (value != null) {
+                            Platform.runLater {
+                                commit(value)
+                            }
+                        }
+                    }
                 }
 
                 KeyCode.ESCAPE -> {

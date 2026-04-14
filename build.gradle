@@ -56,6 +56,7 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation("org.jetbrains.spek:spek-api:1.1.5")
     testImplementation("com.natpryce:hamkrest:1.5.0.0")
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
 }
 
 test {

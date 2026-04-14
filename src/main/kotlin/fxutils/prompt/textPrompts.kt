@@ -6,11 +6,11 @@ import javafx.scene.input.KeyEvent
 class PredicateTextPrompt(
     title: String, initialText: String, private val check: (String) -> Boolean
 ) : TextPrompt<String>(title, initialText) {
-    override fun convert(text: String): String? = text.takeIf(check)
+    override suspend fun convert(text: String, ev: KeyEvent): String? = text.takeIf(check)
 }
 
 class SimpleTextPrompt(title: String, initialText: String) : TextPrompt<String>(title, initialText) {
-    override fun convert(text: String): String = text
+    override suspend fun convert(text: String, ev: KeyEvent): String = text
 }
 
 class IntegerPrompt(
@@ -26,6 +26,6 @@ class IntegerPrompt(
         }
     }
 
-    override fun convert(text: String): Int? = text.toIntOrNull()?.takeIf { v -> v in range }
+    override suspend fun convert(text: String, ev: KeyEvent): Int? = text.toIntOrNull()?.takeIf { v -> v in range }
 }
 
