@@ -14,6 +14,7 @@ import javafx.scene.layout.Region
 import javafx.stage.Window
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.File
 import kotlin.math.absoluteValue
 
 fun Node.setupDragging(
@@ -207,6 +208,17 @@ fun Node.setupDropArea(json: Json = Json, configure: ConfiguredDropHandler.() ->
     setupDropArea(ConfiguredDropHandler(json, configure))
 }
 
+val Dragboard.hasFiles get() = hasFiles() || contentTypes.any { t -> "application/vnd.portal.files" in t.identifiers }
+
+fun Dragboard.files(): List<File> {
+    files?.let { return it }
+    val fileContentType = contentTypes.firstOrNull { t -> "application/vnd.portal.files" in t.identifiers }
+        ?: return emptyList()
+    val fileList = getContent(fileContentType) as? List<*>
+    if (fileList != null) return fileList.map { it as File }
+    return emptyList()
+}
+
 fun Dragboard.hasFiles(vararg extensions: String) =
     hasFiles() && files.all { f -> f.extension in extensions }
 
@@ -215,4 +227,9 @@ fun Dragboard.hasFile(vararg extensions: String): Boolean = hasFiles(*extensions
 inline fun <reified T> Dragboard.putSerializableContent(format: TypedDataFormat<T>, value: T, json: Json = Json) {
     val str = json.encodeToString(value)
     setContent(mapOf(format to str))
+}
+
+inline fun <reified T : Any> Dragboard.getSerializableContent(format: TypedDataFormat<T>, json: Json = Json): T? {
+    val str = getContent(format) as? String ?: return null
+    return json.decodeFromString(str)
 }

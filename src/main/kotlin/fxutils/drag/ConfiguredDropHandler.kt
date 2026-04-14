@@ -24,7 +24,7 @@ open class ConfiguredDropHandler(val json: Json = Json, setup: ConfiguredDropHan
         return when (files.size) {
             0 -> {
                 val acceptedFormat = event.dragboard.contentTypes.intersect(handlers.keys).firstOrNull()
-                return if (acceptedFormat != null) handlers.getValue(acceptedFormat).acceptedModes(event)
+                if (acceptedFormat != null) handlers.getValue(acceptedFormat).acceptedModes(event)
                 else emptyArray()
             }
 
